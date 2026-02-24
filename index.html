@@ -9,6 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     :root {
       --navy: #0a0e1a;
@@ -826,6 +827,202 @@
 
     .contact-divider { color: var(--text-dim); }
 
+    /* ── MULTI-BUILDING ── */
+    .building-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      animation: fadeUp 0.25s ease;
+    }
+    .building-row:last-of-type { border-bottom: none; margin-bottom: 0; }
+    .building-row-label {
+      font-size: 0.7em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+    .building-row input {
+      width: 100%;
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.92em;
+    }
+    .building-row input:focus { outline: none; border-color: var(--amber); }
+    .remove-building-btn {
+      width: 34px;
+      height: 34px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 8px;
+      color: #f87171;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .remove-building-btn:hover { background: rgba(239,68,68,0.2); }
+    .add-building-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: transparent;
+      border: 1px dashed rgba(245,158,11,0.35);
+      border-radius: 8px;
+      color: var(--amber);
+      font-family: 'Familjen Grotesk', sans-serif;
+      font-size: 0.8em;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 9px 14px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 14px;
+      transition: all 0.2s;
+    }
+    .add-building-btn:hover { background: var(--amber-dim); border-color: var(--amber); }
+    .portfolio-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--amber-dim);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 12px;
+    }
+    .portfolio-total-label { font-size: 0.75em; font-weight: 600; color: var(--amber); text-transform: uppercase; letter-spacing: 0.06em; }
+    .portfolio-total-value { font-family: 'JetBrains Mono', monospace; font-size: 1em; font-weight: 500; color: #fff; }
+
+    /* ── EXPORT UPSIDE BANNER ── */
+    .export-banner {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: rgba(52,211,153,0.06);
+      border: 1px solid rgba(52,211,153,0.25);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.4s ease;
+    }
+    .export-banner-icon {
+      width: 34px;
+      height: 34px;
+      background: rgba(52,211,153,0.12);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .export-banner-title {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .export-not-included {
+      font-size: 0.75em;
+      font-weight: 600;
+      background: rgba(52,211,153,0.12);
+      border: 1px solid rgba(52,211,153,0.25);
+      color: var(--green);
+      padding: 2px 8px;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .export-banner-detail { font-size: 0.8em; color: var(--text-muted); line-height: 1.6; }
+    .export-banner-detail strong { color: var(--green); font-family: 'JetBrains Mono', monospace; }
+
+    /* ── EMAIL MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-box {
+      background: var(--navy-2);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 100%;
+      max-width: 440px;
+      animation: fadeUp 0.3s ease;
+    }
+    .modal-title {
+      font-size: 1.1em;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-sub { font-size: 0.85em; color: var(--text-muted); margin-bottom: 22px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-cancel {
+      flex: 1;
+      padding: 11px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: 'Familjen Grotesk', sans-serif;
+      font-size: 0.88em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-cancel:hover { border-color: var(--text-muted); color: var(--text); }
+    .modal-send {
+      flex: 2;
+      padding: 11px 18px;
+      background: var(--amber);
+      border: none;
+      border-radius: 8px;
+      color: var(--navy);
+      font-family: 'Familjen Grotesk', sans-serif;
+      font-size: 0.88em;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.2s;
+    }
+    .modal-send:hover { background: var(--amber-light); }
+    .modal-send:disabled { opacity: 0.6; cursor: not-allowed; }
+    .modal-msg {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.82em;
+    }
+    .modal-msg.success { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--green); }
+    .modal-msg.error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: #fca5a5; }
+
     /* ── PPA MILESTONE TABLE ── */
     .milestone-table { width: 100%; border-collapse: collapse; }
     .milestone-table th {
@@ -1064,15 +1261,23 @@
         </div>
         <span class="card-title">Building Specifications</span>
       </div>
-      <div class="form-row">
-        <label>Length (metres)</label>
-        <input type="number" id="length" placeholder="e.g. 50" step="0.1" min="1">
+
+      <!-- Building rows container -->
+      <div id="buildingRows"></div>
+
+      <!-- Add building button -->
+      <button class="add-building-btn" onclick="addBuilding()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Another Building
+      </button>
+
+      <!-- Portfolio total -->
+      <div class="portfolio-total" id="portfolioTotal" style="display:none">
+        <span class="portfolio-total-label">Combined Roof Area</span>
+        <span class="portfolio-total-value" id="portfolioTotalValue">0 m²</span>
       </div>
-      <div class="form-row">
-        <label>Width (metres)</label>
-        <input type="number" id="width" placeholder="e.g. 30" step="0.1" min="1">
-      </div>
-      <div class="form-row">
+
+      <div class="form-row" style="margin-top:18px">
         <label>Roof Type</label>
         <select id="roofType">
           <option value="pitched">Pitched Roof</option>
@@ -1112,6 +1317,29 @@
 
   <div class="error-msg" id="errorMsg" style="display:none"></div>
 
+  <!-- EMAIL MODAL -->
+  <div class="modal-overlay" id="emailModal" style="display:none" onclick="closeEmailModal(event)">
+    <div class="modal-box">
+      <div class="modal-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        Email Me This Report
+      </div>
+      <p class="modal-sub">Enter your email below. The PDF will download to your device instantly, and we'll also send you a follow-up message so Martyn can get in touch.</p>
+      <div class="form-row">
+        <label>Your Email Address</label>
+        <input type="email" id="recipientEmail" placeholder="yourname@company.com">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeEmailModal()">Cancel</button>
+        <button class="modal-send" onclick="sendEmailReport()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span id="sendBtnText">Send Report</span>
+        </button>
+      </div>
+      <div class="modal-msg" id="modalMsg" style="display:none"></div>
+    </div>
+  </div>
+
   <!-- LOADING -->
   <div class="loading" id="loading">
     <div class="loading-ring"></div>
@@ -1123,10 +1351,12 @@
 
     <div class="results-header">
       <div class="results-title">Your Solar <span>Analysis</span></div>
-      <button class="download-btn" onclick="downloadPDF()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Download PDF
-      </button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="download-btn" onclick="openEmailModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          Email Report
+        </button>
+      </div>
     </div>
 
     <!-- MODE TABS -->
@@ -1232,6 +1462,17 @@
       </div>
     </div>
 
+    <!-- EXPORT UPSIDE BANNER -->
+    <div class="export-banner" id="exportBanner" style="display:none">
+      <div class="export-banner-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="export-banner-body">
+        <div class="export-banner-title">Additional Export Upside <span class="export-not-included">not included in savings</span></div>
+        <div class="export-banner-detail">Based on 10% of generation exported at 5p/kWh (SEG nominal rate), your estimated 30-year export revenue is <strong id="exportRevenue">—</strong>. This is purely additional upside and is excluded from all savings calculations above as export rates are not guaranteed and vary by DNO and tariff.</div>
+      </div>
+    </div>
+
     <!-- COMPARISON PANELS (shown in PPA mode) -->
     <div class="comparison-grid" id="comparisonGrid" style="display:none">
       <div class="comparison-panel self-funded">
@@ -1293,7 +1534,8 @@
       <div class="assumptions-grid" id="assumptionsGrid">
         <div class="assumption-item">Maintenance costs NOT included. Typically £15–£20/kWp/year.</div>
         <div class="assumption-item">Roof coverage: 80% of total roof area assumed usable, accounting for edge setbacks, obstructions, vents, and inter-row spacing.</div>
-        <div class="assumption-item">Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate. The remaining 10% exported is not valued.</div>
+        <div class="assumption-item">Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate.</div>
+        <div class="assumption-item">Export upside: the remaining 10% exported at a nominal 5p/kWh (SEG rate) is shown separately above as additional upside only — excluded from savings as export rates are not guaranteed and vary by DNO and tariff.</div>
         <div class="assumption-item">Panel degradation: 2% per year (industry standard).</div>
         <div class="assumption-item">Electricity price inflation: 3% per year.</div>
         <div class="assumption-item">Panel spec: 450W, 2.27m × 1.13m (2.57m²). System efficiency: 85%.</div>
@@ -1370,6 +1612,144 @@
   let currentMode = 'selffunded';
   let ppaData = null;
 
+  // ── EMAILJS CONFIG — replace with your credentials ──
+  const EMAILJS_PUBLIC_KEY  = 'W-UuC4rxMLukeKUJJ';
+  const EMAILJS_SERVICE_ID  = 'service_u4kh62c';
+  const EMAILJS_TEMPLATE_ID = 'template_qvzha1q';
+
+  // ── MULTI-BUILDING ──────────────────────────────────
+  let buildings = [];
+
+  function initBuildings() {
+    buildings = [{ id: 1 }];
+    renderBuildingRows();
+  }
+
+  function renderBuildingRows() {
+    const container = document.getElementById('buildingRows');
+    container.innerHTML = buildings.map((b, i) => `
+      <div class="building-row" id="brow-${b.id}">
+        <div>
+          <div class="building-row-label">Building ${i + 1} — Length (m)</div>
+          <input type="number" id="blen-${b.id}" placeholder="e.g. 50" step="0.1" min="1"
+            oninput="updatePortfolioTotal()">
+        </div>
+        <div>
+          <div class="building-row-label">Width (m)</div>
+          <input type="number" id="bwid-${b.id}" placeholder="e.g. 30" step="0.1" min="1"
+            oninput="updatePortfolioTotal()">
+        </div>
+        <button class="remove-building-btn" onclick="removeBuilding(${b.id})"
+          style="${buildings.length === 1 ? 'visibility:hidden' : ''}" title="Remove building">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`).join('');
+    updatePortfolioTotal();
+  }
+
+  function addBuilding() {
+    const nextId = (buildings[buildings.length - 1]?.id || 0) + 1;
+    buildings.push({ id: nextId });
+    renderBuildingRows();
+  }
+
+  function removeBuilding(id) {
+    if (buildings.length === 1) return;
+    buildings = buildings.filter(b => b.id !== id);
+    renderBuildingRows();
+  }
+
+  function getBuildingData() {
+    return buildings.map(b => ({
+      length: parseFloat(document.getElementById(`blen-${b.id}`)?.value) || 0,
+      width:  parseFloat(document.getElementById(`bwid-${b.id}`)?.value) || 0,
+    }));
+  }
+
+  function updatePortfolioTotal() {
+    const data = getBuildingData();
+    const total = data.reduce((sum, b) => sum + (b.length * b.width || 0), 0);
+    const countFilled = data.filter(b => b.length > 0 && b.width > 0).length;
+    const el = document.getElementById('portfolioTotal');
+    const valEl = document.getElementById('portfolioTotalValue');
+    if (buildings.length > 1 && countFilled > 0) {
+      el.style.display = 'flex';
+      valEl.textContent = total.toFixed(0) + ' m²';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
+  // ── EMAIL MODAL ────────────────────────────────────
+  function openEmailModal() {
+    if (!calculationData) return;
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    document.getElementById('emailModal').style.display = 'flex';
+    document.getElementById('modalMsg').style.display = 'none';
+    document.getElementById('recipientEmail').value = '';
+    document.getElementById('sendBtnText').textContent = 'Send Report';
+    document.getElementById('emailModal').querySelector('.modal-send').disabled = false;
+  }
+
+  function closeEmailModal(event) {
+    if (!event || event.target === document.getElementById('emailModal')) {
+      document.getElementById('emailModal').style.display = 'none';
+    }
+  }
+
+  async function sendEmailReport() {
+    const email = document.getElementById('recipientEmail').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showModalMsg('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('emailModal').querySelector('.modal-send');
+    const txt = document.getElementById('sendBtnText');
+    btn.disabled = true;
+    txt.textContent = 'Sending…';
+
+    const systemSize = calculationData.results.systemSizeKw.toFixed(2);
+    const reportDate = calculationData.date;
+    const region     = calculationData.inputs.region;
+
+    try {
+      // Email 1 — to the prospect
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email:    email,
+        to_name:     email.split('@')[0],
+        report_date: reportDate,
+        system_size: systemSize,
+        region:      region,
+        message:     `Many thanks for requesting an output of the I&C Solar Calculator — your report has downloaded to your device.\n\nIf you wish to discuss this further, free of charge, then we can slot in 30 minutes into the diary to understand your requirement in more detail.\n\nKind regards,\nMartyn Sheridan\nSales Director\n07872015769`,
+      });
+
+      // Email 2 — lead notification to Martyn
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email:    'martynsheridan621@gmail.com',
+        to_name:     'Martyn',
+        report_date: reportDate,
+        system_size: systemSize,
+        region:      region,
+        message:     `New lead alert!\n\nSomeone has just requested a solar report from the I&C Calculator.\n\nEmail: ${email}\nSystem size: ${systemSize} kWp\nRegion: ${region}\nDate: ${reportDate}\n\nFollow up when ready.`,
+      });
+
+      // Trigger local PDF download simultaneously
+      downloadPDF();
+
+      showModalMsg('✓ Done! Your PDF is downloading and a follow-up is on its way.', 'success');
+      setTimeout(() => closeEmailModal(), 3000);
+
+    } catch (err) {
+      console.error('EmailJS error:', err);
+      // Still trigger the PDF download even if email fails
+      downloadPDF();
+      showModalMsg('Email could not be sent, but your PDF is downloading now.', 'error');
+      btn.disabled = false;
+      txt.textContent = 'Try Again';
+    }
+  }
+
   let calculationData = null;
   let currentChart = null;
 
@@ -1408,7 +1788,8 @@
       document.getElementById('assumptionsGrid').innerHTML = `
         <div class="assumption-item">Maintenance costs NOT included. Typically £15–£20/kWp/year.</div>
         <div class="assumption-item">Roof coverage: 80% of total roof area assumed usable, accounting for edge setbacks, obstructions, vents, and inter-row spacing.</div>
-        <div class="assumption-item">Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate. The remaining 10% exported is not valued.</div>
+        <div class="assumption-item">Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate.</div>
+        <div class="assumption-item">Export upside: the remaining 10% exported at a nominal 5p/kWh (SEG rate) is shown separately above as additional upside only — excluded from savings as export rates are not guaranteed and vary by DNO and tariff.</div>
         <div class="assumption-item">Panel degradation: 2% per year (industry standard).</div>
         <div class="assumption-item">Electricity price inflation: 3% per year.</div>
         <div class="assumption-item">Panel spec: 450W, 2.27m × 1.13m (2.57m²). System efficiency: 85%.</div>
@@ -1579,44 +1960,56 @@
   }
 
   function calculateSolar() {
-    const length = parseFloat(document.getElementById('length').value);
-    const width = parseFloat(document.getElementById('width').value);
-    const roofType = document.getElementById('roofType').value;
-    const region = document.getElementById('region').value;
+    const roofType   = document.getElementById('roofType').value;
+    const region     = document.getElementById('region').value;
     const energyPrice = parseFloat(document.getElementById('energyPrice').value) / 100;
 
-    if (!length || !width || length <= 0 || width <= 0) {
-      showError('Please enter valid building dimensions.');
+    // Collect all buildings
+    const bdata = getBuildingData();
+    const filled = bdata.filter(b => b.length > 0 && b.width > 0);
+
+    if (filled.length === 0) {
+      showError('Please enter valid dimensions for at least one building.');
+      return;
+    }
+    if (filled.some(b => isNaN(b.length) || isNaN(b.width))) {
+      showError('Please check your building dimensions — some entries are invalid.');
       return;
     }
 
-    const roofArea = length * width;
-    if (roofArea < MIN_ROOF_AREA) {
-      showError(`Building footprint is ${roofArea.toFixed(0)} m² — the minimum accepted is ${MIN_ROOF_AREA} m². This calculator is designed for larger commercial and industrial buildings only.`);
-      return;
-    }
+    // Calculate per-building kWp to check threshold logic
+    const buildingKwps = filled.map(b => {
+      const area = b.length * b.width * ROOF_COVERAGE;
+      return (Math.floor(area / PANEL_AREA) * PANEL_POWER) / 1000;
+    });
+    const hasLargeBuilding = buildingKwps.some(k => k >= MIN_SYSTEM_KWP);
+    const totalKwp = buildingKwps.reduce((a, b) => a + b, 0);
 
-    // Pre-check system size before full compute
-    const usableArea = roofArea * ROOF_COVERAGE;
-    const estPanels = Math.floor(usableArea / PANEL_AREA);
-    const estKwp = (estPanels * PANEL_POWER) / 1000;
-    if (estKwp < MIN_SYSTEM_KWP) {
-      showError(`Estimated system size is ${estKwp.toFixed(1)} kWp — the minimum accepted is ${MIN_SYSTEM_KWP} kWp. Please enter a larger building.`);
-      return;
+    // Total roof area
+    const totalRoofArea = filled.reduce((sum, b) => sum + b.length * b.width, 0);
+
+    if (!hasLargeBuilding) {
+      // No single building meets threshold — check combined
+      if (totalRoofArea < MIN_ROOF_AREA) {
+        showError(`Combined footprint is ${totalRoofArea.toFixed(0)} m² — the minimum accepted is ${MIN_ROOF_AREA} m². This calculator is designed for larger commercial and industrial portfolios.`);
+        return;
+      }
+      if (totalKwp < MIN_SYSTEM_KWP) {
+        showError(`Combined estimated system is ${totalKwp.toFixed(1)} kWp — the minimum accepted is ${MIN_SYSTEM_KWP} kWp. Please add more buildings or larger dimensions.`);
+        return;
+      }
     }
+    // If at least one building qualifies, all are included
 
     hideError();
-
-    // Update steps
     document.getElementById('step1').className = 'step done';
     document.getElementById('step2').className = 'step done';
     document.getElementById('step3').className = 'step active';
-
     document.getElementById('loading').style.display = 'block';
     document.getElementById('results').style.display = 'none';
 
     setTimeout(() => {
-      const data = compute(length, width, roofType, region, energyPrice);
+      const data = compute(totalRoofArea, roofType, region, energyPrice, filled);
       document.getElementById('loading').style.display = 'none';
       document.getElementById('results').style.display = 'block';
       document.getElementById('results').scrollIntoView({ behavior:'smooth' });
@@ -1624,24 +2017,26 @@
     }, 700);
   }
 
-  function compute(length, width, roofType, region, energyPrice) {
-    const roofArea = length * width;
-    const usableRoofArea = roofArea * ROOF_COVERAGE;
-    const maxPanels = Math.floor(usableRoofArea / PANEL_AREA);
-    const systemSizeKw = (maxPanels * PANEL_POWER) / 1000;
-    const hardwareCost = systemSizeKw * 1000 * PANEL_COST_PER_WATT;
+  function compute(totalRoofArea, roofType, region, energyPrice, buildings) {
+    const usableRoofArea  = totalRoofArea * ROOF_COVERAGE;
+    const maxPanels       = Math.floor(usableRoofArea / PANEL_AREA);
+    const systemSizeKw    = (maxPanels * PANEL_POWER) / 1000;
+    const hardwareCost    = systemSizeKw * 1000 * PANEL_COST_PER_WATT;
     const installationCost = systemSizeKw * INSTALL_COST[roofType];
-    const totalCost = hardwareCost + installationCost;
+    const totalCost       = hardwareCost + installationCost;
     const yearOneGeneration = systemSizeKw * REGIONAL_YIELD[region] * SYSTEM_EFFICIENCY;
 
     let yearlyGeneration = [], yearlySavings = [], cumulativeData = [];
     let totalGeneration = 0, cumulativeSavings = 0, paybackYear = null;
+    let totalExportRevenue = 0;
+    const EXPORT_RATE = 0.05; // 5p/kWh nominal SEG rate
 
     for (let y = 1; y <= SYSTEM_LIFETIME; y++) {
-      const gen = yearOneGeneration * Math.pow(1 - DEGRADATION_RATE, y - 1);
+      const gen   = yearOneGeneration * Math.pow(1 - DEGRADATION_RATE, y - 1);
       const price = energyPrice * Math.pow(1 + PRICE_INFLATION, y - 1);
-      // Only the self-consumed portion displaces grid electricity at the import rate
-      const sav = gen * SELF_CONSUMPTION * price;
+      const sav   = gen * SELF_CONSUMPTION * price;
+      const exportKwh = gen * (1 - SELF_CONSUMPTION);
+      totalExportRevenue += exportKwh * EXPORT_RATE; // flat nominal rate, not inflated (upside only)
       yearlyGeneration.push(gen);
       yearlySavings.push(sav);
       totalGeneration += gen;
@@ -1652,15 +2047,17 @@
       }
     }
 
-    const totalSavings = yearlySavings.reduce((a,b)=>a+b,0);
+    const totalSavings = yearlySavings.reduce((a,b) => a+b, 0);
     const roi = ((totalSavings - totalCost) / totalCost) * 100;
     const carbonOffset = (totalGeneration * CARBON_FACTOR) / 1000;
 
     calculationData = {
-      inputs:{ length, width, roofType, region, energyPrice:energyPrice*100 },
-      results:{ roofArea, maxPanels, systemSizeKw, totalCost, yearOneGeneration,
-                totalGeneration, totalSavings, roi, paybackYear:paybackYear||SYSTEM_LIFETIME,
-                carbonOffset, yearlySavings, yearlyGeneration },
+      inputs:{ roofType, region, energyPrice: energyPrice*100,
+               buildingCount: buildings ? buildings.length : 1 },
+      results:{ roofArea: totalRoofArea, maxPanels, systemSizeKw, totalCost,
+                yearOneGeneration, totalGeneration, totalSavings, roi,
+                paybackYear: paybackYear || SYSTEM_LIFETIME,
+                carbonOffset, yearlySavings, yearlyGeneration, totalExportRevenue },
       date: new Date().toLocaleDateString('en-GB')
     };
     return calculationData;
@@ -1680,6 +2077,10 @@
     animateCount(document.getElementById('roi'), 0, r.roi, '', '', 1);
     animateCount(document.getElementById('payback'), 0, r.paybackYear, '', '', 1);
     animateCount(document.getElementById('carbon'), 0, r.carbonOffset, '', '', 1);
+
+    // Export upside banner
+    document.getElementById('exportRevenue').textContent = '£' + fmt(r.totalExportRevenue);
+    document.getElementById('exportBanner').style.display = 'flex';
 
     // Bar chart (year-by-year)
     const maxSav = Math.max(...r.yearlySavings.slice(0,10));
@@ -1888,8 +2289,7 @@
     }
   }
 
-  async function downloadSelfFundedPDF() {
-    if (!calculationData) return;
+  async function buildSelfFundedPDFDoc() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const r   = calculationData.results;
@@ -1972,7 +2372,7 @@
 
     // LEFT: Building Specifications
     let ly = sectionHead('Building Specifications', BLUE, [235, 244, 255], C1L, startY, COL_W);
-    ly = dataRow('Dimensions:', inp.length + 'm x ' + inp.width + 'm', C1L, ly, COL_W);
+    ly = dataRow('No. of Buildings:', inp.buildingCount + (inp.buildingCount > 1 ? ' buildings (portfolio)' : ' building'), C1L, ly, COL_W);
     ly = dataRow('Total Roof Area:', r.roofArea.toFixed(0) + ' m2', C1L, ly, COL_W);
     ly = dataRow('Usable Roof (80%):', (r.roofArea * 0.8).toFixed(0) + ' m2', C1L, ly, COL_W);
     ly = dataRow('Roof Type:', inp.roofType === 'pitched' ? 'Pitched' : 'Flat', C1L, ly, COL_W);
@@ -1994,6 +2394,7 @@
     ry = dataRow('Net Profit (30yr):', 'GBP ' + fmt(r.totalSavings - r.totalCost), C2L, ry, COL_W);
     ry = dataRow('Return on Investment:', r.roi.toFixed(1) + '%', C2L, ry, COL_W);
     ry = dataRow('Payback Period:', r.paybackYear.toFixed(1) + ' years', C2L, ry, COL_W);
+    ry = dataRow('Export Upside (30yr)*:', 'GBP ' + fmt(r.totalExportRevenue), C2L, ry, COL_W);
 
     ry += 5;
 
@@ -2034,7 +2435,8 @@
     const assumptions = [
       'Maintenance costs are NOT included. Annual maintenance typically costs GBP 15-20 per kWp per year.',
       'Roof coverage: 80% of total roof area assumed usable, accounting for edge setbacks, obstructions, vents and inter-row spacing.',
-      'Self-consumption: 90% of generation consumed on-site at import rate. The remaining 10% exported is not valued.',
+      'Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate.',
+      '*Export upside: the remaining 10% of generation exported is valued at a nominal 5p/kWh (SEG rate) — GBP ' + fmt(r.totalExportRevenue) + ' over 30 years. This is excluded from all savings calculations as export rates are not guaranteed and vary by DNO and tariff.',
       'Panel degradation: 2% per year. Electricity price inflation: 3% per year.',
       'Panel specification: 450W, 2.27m x 1.13m. Overall system efficiency: 85%.',
       'Carbon factor: 0.233 kg CO2 per kWh (UK grid average).',
@@ -2103,10 +2505,16 @@
     T('italic', 7, MGREY);
     doc.text('Estimates only. Actual performance may vary. Consult a certified installer for a full site assessment.', PW / 2, PH - 6, { align: 'center' });
 
+    return doc;
+  }
+
+  async function downloadSelfFundedPDF() {
+    if (!calculationData) return;
+    const doc = await buildSelfFundedPDFDoc();
     doc.save('Solar-Proposal-' + calculationData.date.replace(/\//g, '-') + '.pdf');
   }
 
-  async function downloadPPAPDF() {
+  async function buildPPAPDFDoc() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const r   = calculationData.results;
@@ -2230,8 +2638,17 @@
     T('italic', 7, MGREY);
     doc.text('Indicative PPA analysis only. Actual PPA terms subject to full site survey and funder agreement.', PW/2, PH-6, { align: 'center' });
 
+    return doc;
+  }
+
+  async function downloadPPAPDF() {
+    if (!calculationData) return;
+    const doc = await buildPPAPDFDoc();
     doc.save('PPA-Proposal-' + calculationData.date.replace(/\//g, '-') + '.pdf');
   }
+
+  // Initialise building rows on page load
+  initBuildings();
 </script>
 </body>
 </html>
