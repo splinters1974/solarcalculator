@@ -2015,21 +2015,24 @@
       // Update UI
       txt.textContent = 'Sent!';
       showModalMsg('Done! PDF downloading now. Martyn will be in touch shortly.', 'success');
+      // Close after 2s so user sees the success message
       setTimeout(() => {
         document.getElementById('emailModal').style.display = 'none';
+        document.getElementById('modalMsg').style.display = 'none';
         btn.disabled = false;
         txt.textContent = 'Send Report';
-      }, 3000);
+      }, 2000);
 
     } catch (err) {
       clearTimeout(safetyTimer);
       console.error('EmailJS error:', err);
       downloadPDF();
-      showModalMsg('Email failed \u2014 but your PDF is downloading now.', 'error');
+      showModalMsg('Email failed — but your PDF is downloading now.', 'error');
       btn.disabled = false;
       txt.textContent = 'Try Again';
     }
   }
+
 
   let calculationData = null;
   let currentChart = null;
