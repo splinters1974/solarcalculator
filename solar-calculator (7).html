@@ -1866,6 +1866,9 @@
   const EMAILJS_SERVICE_ID  = 'service_u4kh62c';
   const EMAILJS_TEMPLATE_ID = 'template_qvzha1q';
 
+  // Initialise EmailJS v4 once at page load (v4 requires object syntax)
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
   // ── MULTI-BUILDING ──────────────────────────────────
   let buildings = [];
 
@@ -1945,7 +1948,6 @@
   // ── EMAIL MODAL ────────────────────────────────────
   function openEmailModal() {
     if (!calculationData) return;
-    emailjs.init(EMAILJS_PUBLIC_KEY);
     document.getElementById('emailModal').style.display = 'flex';
     document.getElementById('modalMsg').style.display = 'none';
     document.getElementById('recipientEmail').value = '';
