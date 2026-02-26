@@ -1969,44 +1969,61 @@
     const btn = document.getElementById('emailModal').querySelector('.modal-send');
     const txt = document.getElementById('sendBtnText');
     btn.disabled = true;
-    txt.textContent = 'Sending…';
+    txt.textContent = 'Sending\u2026';
 
     const systemSize = calculationData.results.systemSizeKw.toFixed(2);
     const reportDate = calculationData.date;
     const region     = calculationData.inputs.region;
 
+    // Safety timeout — if EmailJS takes more than 8s, unblock the UI anyway
+    const safetyTimer = setTimeout(() => {
+      downloadPDF();
+      txt.textContent = 'Send Report';
+      btn.disabled = false;
+      showModalMsg('Email timed out, but your PDF has downloaded.', 'error');
+    }, 8000);
+
     try {
-      // Email 1 — to the prospect
+      // Only await the prospect email — this is the one that matters for UX
       await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
         to_email:    email,
         to_name:     email.split('@')[0],
         report_date: reportDate,
         system_size: systemSize,
         region:      region,
-        message:     `Many thanks for requesting an output of the I&C Solar Calculator — your report has downloaded to your device.\n\nIf you wish to discuss this further, free of charge, then we can slot in 30 minutes into the diary to understand your requirement in more detail.\n\nKind regards,\nMartyn Sheridan\nSales Director\n07872015769`,
+        message:     'Many thanks for requesting an output of the I&C Solar Calculator \u2014 your report has downloaded to your device.\n\nIf you wish to discuss this further, free of charge, then we can slot in 30 minutes into the diary to understand your requirement in more detail.\n\nKind regards,\nMartyn Sheridan\nSales Director\n07872015769',
       });
 
-      // Email 2 — lead notification to Martyn
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      // Clear safety timer — we got a response
+      clearTimeout(safetyTimer);
+
+      // Lead notification — fire and forget, never blocks UI
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
         to_email:    'martynsheridan621@gmail.com',
         to_name:     'Martyn',
         report_date: reportDate,
         system_size: systemSize,
         region:      region,
-        message:     `New lead alert!\n\nSomeone has just requested a solar report from the I&C Calculator.\n\nEmail: ${email}\nSystem size: ${systemSize} kWp\nRegion: ${region}\nDate: ${reportDate}\n\nFollow up when ready.`,
-      });
+        message:     'New lead!\n\nEmail: ' + email + '\nSystem: ' + systemSize + ' kWp\nRegion: ' + region + '\nDate: ' + reportDate,
+      }).catch(e => console.warn('Lead notification non-critical error:', e));
 
-      // Trigger local PDF download simultaneously
+      // Download PDF
       downloadPDF();
 
-      showModalMsg('✓ Done! Your PDF is downloading and a follow-up is on its way.', 'success');
-      setTimeout(() => closeEmailModal(), 3000);
+      // Update UI
+      txt.textContent = 'Sent!';
+      showModalMsg('Done! PDF downloading now. Martyn will be in touch shortly.', 'success');
+      setTimeout(() => {
+        document.getElementById('emailModal').style.display = 'none';
+        btn.disabled = false;
+        txt.textContent = 'Send Report';
+      }, 3000);
 
     } catch (err) {
+      clearTimeout(safetyTimer);
       console.error('EmailJS error:', err);
-      // Still trigger the PDF download even if email fails
       downloadPDF();
-      showModalMsg('Email could not be sent, but your PDF is downloading now.', 'error');
+      showModalMsg('Email failed \u2014 but your PDF is downloading now.', 'error');
       btn.disabled = false;
       txt.textContent = 'Try Again';
     }
