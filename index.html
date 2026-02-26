@@ -153,17 +153,19 @@
     }
 
     .logo-area {
-      width: 100px;
-      height: 100px;
-      border-radius: var(--radius);
+      width: 200px;
+      height: 200px;
+      border-radius: var(--radius-lg);
       background: var(--navy-3);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(245,158,11,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       flex-shrink: 0;
-      margin-left: 30px;
+      margin-left: 40px;
+      box-shadow: 0 0 40px rgba(245,158,11,0.08);
+      position: relative;
     }
 
     .logo-area img {
@@ -1058,44 +1060,101 @@
     .badge-free     { background: rgba(52,211,153,0.15); color: var(--green); }
 
     /* ── MODE TABS ── */
-    .mode-tabs {
-      display: flex;
-      gap: 4px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 4px;
+    /* ── FUNDING CHOICE CARDS ── */
+    .funding-choice {
       margin-bottom: 36px;
     }
-    .mode-tab {
-      flex: 1;
-      padding: 12px 16px;
-      border: none;
-      border-radius: 8px;
-      background: transparent;
-      color: var(--text-dim);
-      font-family: 'Familjen Grotesk', sans-serif;
-      font-size: 0.85em;
-      font-weight: 600;
-      letter-spacing: 0.05em;
+    .funding-choice-title {
+      font-size: 0.78em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .funding-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .funding-card {
+      background: var(--navy-2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
       cursor: pointer;
+      text-align: left;
       transition: all 0.25s;
+      font-family: 'Familjen Grotesk', sans-serif;
+      position: relative;
+    }
+    .funding-card:hover { border-color: rgba(245,158,11,0.4); transform: translateY(-2px); }
+    .funding-card.active-sf {
+      border-color: var(--amber);
+      background: rgba(245,158,11,0.06);
+      box-shadow: 0 0 0 1px var(--amber), 0 8px 24px rgba(245,158,11,0.15);
+    }
+    .funding-card.active-ppa {
+      border-color: var(--sky);
+      background: rgba(56,189,248,0.06);
+      box-shadow: 0 0 0 1px var(--sky), 0 8px 24px rgba(56,189,248,0.15);
+    }
+    .funding-card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      margin-bottom: 14px;
     }
-    .mode-tab.active {
-      background: var(--amber);
-      color: var(--navy);
-      box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+    .amber-icon { background: var(--amber-dim); color: var(--amber); }
+    .sky-icon   { background: var(--sky-dim);   color: var(--sky);   }
+    .funding-card-label {
+      font-size: 1em;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
     }
-    .mode-tab.active.ppa-tab {
-      background: var(--sky);
-      box-shadow: 0 4px 12px rgba(56,189,248,0.3);
+    .funding-card-sub {
+      font-size: 0.78em;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
     }
-    .mode-tab:not(.active):hover { color: var(--text-muted); background: rgba(255,255,255,0.04); }
+    .funding-card-badge {
+      display: inline-block;
+      font-size: 0.7em;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+    .amber-badge { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .sky-badge   { background: var(--sky-dim);   color: var(--sky);   border: 1px solid rgba(56,189,248,0.3); }
+    /* switch prompt shown below results when a mode is active */
+    .switch-mode-prompt {
+      font-size: 0.78em;
+      color: var(--text-dim);
+      text-align: center;
+      margin-top: -20px;
+      margin-bottom: 28px;
+    }
+    .switch-mode-prompt button {
+      background: none;
+      border: none;
+      color: var(--amber);
+      font-family: 'Familjen Grotesk', sans-serif;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+    @media (max-width: 600px) {
+      .funding-choice-grid { grid-template-columns: 1fr; }
+    }
 
     /* ── PPA INPUTS ── */
     .ppa-inputs {
@@ -1214,6 +1273,93 @@
     }
 
     /* ── CONTACT CTA ── */
+    /* ── VISUAL ENHANCEMENTS ── */
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -180px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 360px;
+      background: radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .header-art {
+      position: absolute;
+      right: 240px;
+      top: 10px;
+      width: 200px;
+      height: 180px;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 36px;
+    }
+    .hero-stat {
+      background: var(--card-bg);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .hero-stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .hero-stat-icon.amber { background: var(--amber-dim); }
+    .hero-stat-icon.sky   { background: var(--sky-dim); }
+    .hero-stat-icon.green { background: var(--green-dim); }
+    .hero-stat-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.25em;
+      font-weight: 500;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .hero-stat-desc { font-size: 0.72em; color: var(--text-dim); line-height: 1.35; }
+    .metric-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .metric-icon.amber { background: var(--amber-dim); }
+    .metric-icon.sky   { background: var(--sky-dim); }
+    .metric-icon.green { background: var(--green-dim); }
+    .metric-icon.grey  { background: rgba(255,255,255,0.05); }
+    .section-label {
+      font-size: 0.68em;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
   </style>
 </head>
 <body>
@@ -1221,6 +1367,47 @@
 
   <!-- HEADER -->
   <header class="header">
+    <!-- Decorative solar panel illustration -->
+    <svg class="header-art" viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#f59e0b" stroke-width="1.5" fill="rgba(245,158,11,0.15)">
+        <rect x="5" y="30" width="38" height="28" rx="2"/>
+        <rect x="50" y="30" width="38" height="28" rx="2"/>
+        <rect x="95" y="30" width="38" height="28" rx="2"/>
+        <rect x="140" y="30" width="38" height="28" rx="2"/>
+        <rect x="5" y="65" width="38" height="28" rx="2"/>
+        <rect x="50" y="65" width="38" height="28" rx="2"/>
+        <rect x="95" y="65" width="38" height="28" rx="2"/>
+        <rect x="140" y="65" width="38" height="28" rx="2"/>
+        <rect x="5" y="100" width="38" height="28" rx="2"/>
+        <rect x="50" y="100" width="38" height="28" rx="2"/>
+        <rect x="95" y="100" width="38" height="28" rx="2"/>
+        <rect x="140" y="100" width="38" height="28" rx="2"/>
+      </g>
+      <g stroke="#f59e0b" stroke-width="0.4" opacity="0.5">
+        <line x1="24" y1="30" x2="24" y2="58"/><line x1="5" y1="44" x2="43" y2="44"/>
+        <line x1="69" y1="30" x2="69" y2="58"/><line x1="50" y1="44" x2="88" y2="44"/>
+        <line x1="114" y1="30" x2="114" y2="58"/><line x1="95" y1="44" x2="133" y2="44"/>
+        <line x1="159" y1="30" x2="159" y2="58"/><line x1="140" y1="44" x2="178" y2="44"/>
+        <line x1="24" y1="65" x2="24" y2="93"/><line x1="5" y1="79" x2="43" y2="79"/>
+        <line x1="69" y1="65" x2="69" y2="93"/><line x1="50" y1="79" x2="88" y2="79"/>
+        <line x1="114" y1="65" x2="114" y2="93"/><line x1="95" y1="79" x2="133" y2="79"/>
+        <line x1="159" y1="65" x2="159" y2="93"/><line x1="140" y1="79" x2="178" y2="79"/>
+        <line x1="24" y1="100" x2="24" y2="128"/><line x1="5" y1="114" x2="43" y2="114"/>
+        <line x1="69" y1="100" x2="69" y2="128"/><line x1="50" y1="114" x2="88" y2="114"/>
+        <line x1="114" y1="100" x2="114" y2="128"/><line x1="95" y1="114" x2="133" y2="114"/>
+        <line x1="159" y1="100" x2="159" y2="128"/><line x1="140" y1="114" x2="178" y2="114"/>
+      </g>
+      <circle cx="92" cy="14" r="7" fill="#f59e0b" opacity="0.8"/>
+      <g stroke="#f59e0b" stroke-width="1.2" opacity="0.5">
+        <line x1="92" y1="2" x2="92" y2="5"/><line x1="92" y1="23" x2="92" y2="26"/>
+        <line x1="80" y1="14" x2="77" y2="14"/><line x1="104" y1="14" x2="107" y2="14"/>
+        <line x1="84" y1="6" x2="82" y2="4"/><line x1="100" y1="22" x2="102" y2="24"/>
+        <line x1="100" y1="6" x2="102" y2="4"/><line x1="84" y1="22" x2="82" y2="24"/>
+      </g>
+      <path d="M92 128 L92 145 L170 145" stroke="#f59e0b" stroke-width="1" fill="none" opacity="0.4"/>
+      <rect x="162" y="138" width="22" height="14" rx="2" stroke="#f59e0b" stroke-width="1" fill="rgba(245,158,11,0.1)" opacity="0.6"/>
+      <path d="M0 30 L92 5 L200 30" stroke="#f59e0b" stroke-width="1" fill="none" opacity="0.25"/>
+    </svg>
     <div class="header-left">
       <div class="header-badge">
         <span class="sun-dot"></span>
@@ -1252,6 +1439,37 @@
     </div>
   </div>
 
+  <!-- HERO STATS STRIP -->
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-icon amber">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </div>
+      <div>
+        <div class="hero-stat-num">30 Years</div>
+        <div class="hero-stat-desc">Full system lifetime projection</div>
+      </div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon sky">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+      </div>
+      <div>
+        <div class="hero-stat-num">2 Routes</div>
+        <div class="hero-stat-desc">Self-Funded or PPA comparison</div>
+      </div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-icon green">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <div class="hero-stat-num">Net Zero</div>
+        <div class="hero-stat-desc">Carbon offset calculated per site</div>
+      </div>
+    </div>
+  </div>
+
   <!-- INPUT SECTION -->
   <div class="input-grid">
     <div class="card">
@@ -1278,10 +1496,12 @@
       </div>
 
       <div class="form-row" style="margin-top:18px">
-        <label>Roof Type</label>
+        <label>Mount Type</label>
         <select id="roofType">
           <option value="pitched">Pitched Roof</option>
           <option value="flat">Flat Roof</option>
+          <option value="ground">Ground Mount</option>
+          <option value="carport">Car Port</option>
         </select>
       </div>
     </div>
@@ -1301,6 +1521,7 @@
           <option value="midlands">Midlands / Wales</option>
           <option value="southwest">South West</option>
           <option value="southeast">South East</option>
+          <option value="national">UK National (Average)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1359,16 +1580,27 @@
       </div>
     </div>
 
-    <!-- MODE TABS -->
-    <div class="mode-tabs">
-      <button class="mode-tab active" id="tabSelfFunded" onclick="switchMode('selffunded')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-        Self-Funded
-      </button>
-      <button class="mode-tab ppa-tab" id="tabPPA" onclick="switchMode('ppa')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        PPA (Third-Party Funded)
-      </button>
+    <!-- FUNDING CHOICE -->
+    <div class="funding-choice" id="fundingChoice">
+      <div class="funding-choice-title">How would you like to fund this system?</div>
+      <div class="funding-choice-grid">
+        <button class="funding-card" id="fundCardSF" onclick="switchMode('selffunded')">
+          <div class="funding-card-icon amber-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          </div>
+          <div class="funding-card-label">Self-Funded</div>
+          <div class="funding-card-sub">You own the system outright. Full savings from day one. Requires upfront capital investment.</div>
+          <div class="funding-card-badge amber-badge">Capital Purchase</div>
+        </button>
+        <button class="funding-card" id="fundCardPPA" onclick="switchMode('ppa')">
+          <div class="funding-card-icon sky-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="funding-card-label">PPA — Third-Party Funded</div>
+          <div class="funding-card-sub">£0 upfront. A funder owns and installs the system. You buy the electricity at a reduced rate.</div>
+          <div class="funding-card-badge sky-badge">No Capital Required</div>
+        </button>
+      </div>
     </div>
 
     <!-- PPA EXTRA INPUTS -->
@@ -1395,32 +1627,38 @@
     </div>
 
     <!-- ROW 1: System metrics -->
+    <div class="section-label">System Overview</div>
     <div class="metrics-grid">
       <div class="metric">
+        <div class="metric-icon grey"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
         <div class="metric-label">Roof Area</div>
         <div class="metric-value" id="roofArea">—</div>
         <div class="metric-unit">m²</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric">
+        <div class="metric-icon grey"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
         <div class="metric-label">Panels Fitted</div>
         <div class="metric-value" id="panelCount">—</div>
         <div class="metric-unit">× 450W</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric">
+        <div class="metric-icon amber"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg></div>
         <div class="metric-label">System Size</div>
         <div class="metric-value" id="systemSize">—</div>
         <div class="metric-unit">kWp</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric">
+        <div class="metric-icon amber"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
         <div class="metric-label">Year 1 Generation</div>
         <div class="metric-value" id="annualGen">—</div>
         <div class="metric-unit">kWh</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric">
+        <div class="metric-icon amber"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
         <div class="metric-label">30yr Generation</div>
         <div class="metric-value" id="totalGen">—</div>
         <div class="metric-unit">kWh</div>
@@ -1429,32 +1667,38 @@
     </div>
 
     <!-- ROW 2: Financial highlights -->
+    <div class="section-label">Financial Summary</div>
     <div class="metrics-row-2">
       <div class="metric big">
+        <div class="metric-icon amber"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></div>
         <div class="metric-label">Installation Cost</div>
         <div class="metric-value" id="totalCost">—</div>
         <div class="metric-unit">GBP total</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric big">
+        <div class="metric-icon amber"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
         <div class="metric-label">30yr Savings</div>
         <div class="metric-value" id="totalSavings">—</div>
         <div class="metric-unit">GBP</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric sky-big">
+        <div class="metric-icon sky"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
         <div class="metric-label">Return on Investment</div>
         <div class="metric-value" id="roi">—</div>
         <div class="metric-unit">% over 30 years</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric sky-big">
+        <div class="metric-icon sky"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
         <div class="metric-label">Payback Period</div>
         <div class="metric-value" id="payback">—</div>
         <div class="metric-unit">years</div>
         <div class="metric-accent"></div>
       </div>
       <div class="metric green-big">
+        <div class="metric-icon green"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div class="metric-label">CO₂ Offset</div>
         <div class="metric-value" id="carbon">—</div>
         <div class="metric-unit">tonnes (30yr)</div>
@@ -1469,7 +1713,7 @@
       </div>
       <div class="export-banner-body">
         <div class="export-banner-title">Additional Export Upside <span class="export-not-included">not included in savings</span></div>
-        <div class="export-banner-detail">Based on 10% of generation exported at 5p/kWh (SEG nominal rate), your estimated 30-year export revenue is <strong id="exportRevenue">—</strong>. This is purely additional upside and is excluded from all savings calculations above as export rates are not guaranteed and vary by DNO and tariff.</div>
+        <div class="export-banner-detail">Based on 20% of generation exported at 5p/kWh (SEG nominal rate), your estimated 30-year export revenue is <strong id="exportRevenue">—</strong>. This is purely additional upside and is excluded from all savings calculations above as export rates are not guaranteed and vary by DNO and tariff.</div>
       </div>
     </div>
 
@@ -1533,13 +1777,13 @@
       </div>
       <div class="assumptions-grid" id="assumptionsGrid">
         <div class="assumption-item">Maintenance costs NOT included. Typically £15–£20/kWp/year.</div>
-        <div class="assumption-item">Roof coverage: 80% of total roof area assumed usable, accounting for edge setbacks, obstructions, vents, and inter-row spacing.</div>
-        <div class="assumption-item">Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate.</div>
-        <div class="assumption-item">Export upside: the remaining 10% exported at a nominal 5p/kWh (SEG rate) is shown separately above as additional upside only — excluded from savings as export rates are not guaranteed and vary by DNO and tariff.</div>
+        <div class="assumption-item">Roof/mount coverage: 80–90% of total area assumed usable depending on mount type, accounting for edge setbacks, obstructions, and inter-row spacing.</div>
+        <div class="assumption-item">Self-consumption: 80% of generation is assumed consumed on-site, displacing grid electricity at the import rate.</div>
+        <div class="assumption-item">Export upside: the remaining 20% exported at a nominal 5p/kWh (SEG rate) is shown separately above as additional upside only — excluded from savings as export rates are not guaranteed and vary by DNO and tariff.</div>
         <div class="assumption-item">Panel degradation: 2% per year (industry standard).</div>
         <div class="assumption-item">Electricity price inflation: 3% per year.</div>
         <div class="assumption-item">Panel spec: 450W, 2.27m × 1.13m (2.57m²). System efficiency: 85%.</div>
-        <div class="assumption-item">Carbon factor: 0.233 kg CO₂/kWh (UK grid average).</div>
+        <div class="assumption-item">Carbon factor: 0.196 kg CO₂/kWh (UK grid 2026).</div>
         <div class="assumption-item">Does not include costs for scaffolding, surveys such as structural and also any grid associated costs or upgrades.</div>
       </div>
     </div>
@@ -1571,13 +1815,14 @@
   const SYSTEM_EFFICIENCY = 0.85;
   const DEGRADATION_RATE = 0.02;
   const PRICE_INFLATION = 0.03;
-  const CARBON_FACTOR = 0.233;
+  const CARBON_FACTOR = 0.196;
   const SYSTEM_LIFETIME = 30;
-  const ROOF_COVERAGE = 0.80;        // 80% of roof area is usable for panels
-  const SELF_CONSUMPTION = 0.90;     // 90% of generation is consumed on-site; remainder exported but not valued
+  const ROOF_COVERAGE = 0.80;
+  const SELF_CONSUMPTION = 0.80;     // 80% of generation consumed on-site
 
-  const REGIONAL_YIELD = { scotland:800, north:900, midlands:1000, southwest:1100, southeast:1150 };
-  const INSTALL_COST = { pitched:800, flat:900 };
+  const REGIONAL_YIELD = { scotland:850, north:950, midlands:1000, southwest:1150, southeast:1200, national:1000 };
+  const INSTALL_COST   = { pitched:800, flat:900, ground:950, carport:1350 };
+  const GROUND_COVERAGE = { pitched:0.80, flat:0.80, ground:0.90, carport:0.85 };
   const MIN_ROOF_AREA = 350;
   const MIN_SYSTEM_KWP = 50;
   const PPA_RATE_ESCALATOR = 0.02;   // 2% per year
@@ -1592,6 +1837,7 @@
     midlands:  { '50-250':[16,15,14,13], '250-500':[15,14,13,12], '500-1000':[14,13,12,11], '1000+':[13,12,11,10] },
     southwest: { '50-250':[15.5,14.5,13.5,12.5], '250-500':[14.5,13.5,12.5,11.5], '500-1000':[13.5,12.5,11.5,10.5], '1000+':[12.5,11.5,10.5,9.5] },
     southeast: { '50-250':[15,14,13,12], '250-500':[14,13,12,11], '500-1000':[13,12,11,10], '1000+':[12,11,10,9] },
+    national:  { '50-250':[16,15,14,13], '250-500':[15,14,13,12], '500-1000':[14,13,12,11], '1000+':[13,12,11,10] },
   };
   const CONTRACT_LENGTHS = [10, 15, 20, 25]; // maps to index 0-3
 
@@ -1603,10 +1849,13 @@
   }
 
   function getPPARate(region, kwp, contractYears, roofType) {
+    const ppaRegion = region === 'national' ? 'midlands' : region; // national uses midlands as proxy
     const band  = getSizeBand(kwp);
     const idx   = CONTRACT_LENGTHS.indexOf(contractYears);
-    const base  = PPA_RATES[region][band][idx];
-    return roofType === 'flat' ? base + 0.2 : base;
+    const base  = PPA_RATES[ppaRegion][band][idx];
+    // flat, ground and carport all carry the structural surcharge
+    const surcharge = (roofType === 'flat' || roofType === 'ground' || roofType === 'carport') ? 0.2 : 0;
+    return base + surcharge;
   }
 
   let currentMode = 'selffunded';
@@ -1625,6 +1874,15 @@
     renderBuildingRows();
   }
 
+  function saveCurrentBuildingValues() {
+    buildings.forEach(b => {
+      const lenEl = document.getElementById(`blen-${b.id}`);
+      const widEl = document.getElementById(`bwid-${b.id}`);
+      if (lenEl) b.length = lenEl.value;
+      if (widEl) b.width  = widEl.value;
+    });
+  }
+
   function renderBuildingRows() {
     const container = document.getElementById('buildingRows');
     container.innerHTML = buildings.map((b, i) => `
@@ -1632,12 +1890,12 @@
         <div>
           <div class="building-row-label">Building ${i + 1} — Length (m)</div>
           <input type="number" id="blen-${b.id}" placeholder="e.g. 50" step="0.1" min="1"
-            oninput="updatePortfolioTotal()">
+            value="${b.length || ''}" oninput="updatePortfolioTotal()">
         </div>
         <div>
           <div class="building-row-label">Width (m)</div>
           <input type="number" id="bwid-${b.id}" placeholder="e.g. 30" step="0.1" min="1"
-            oninput="updatePortfolioTotal()">
+            value="${b.width || ''}" oninput="updatePortfolioTotal()">
         </div>
         <button class="remove-building-btn" onclick="removeBuilding(${b.id})"
           style="${buildings.length === 1 ? 'visibility:hidden' : ''}" title="Remove building">
@@ -1648,13 +1906,17 @@
   }
 
   function addBuilding() {
+    saveCurrentBuildingValues();
     const nextId = (buildings[buildings.length - 1]?.id || 0) + 1;
-    buildings.push({ id: nextId });
+    buildings.push({ id: nextId, length: '', width: '' });
     renderBuildingRows();
+    // Focus the new length input
+    setTimeout(() => document.getElementById(`blen-${nextId}`)?.focus(), 50);
   }
 
   function removeBuilding(id) {
     if (buildings.length === 1) return;
+    saveCurrentBuildingValues();
     buildings = buildings.filter(b => b.id !== id);
     renderBuildingRows();
   }
@@ -1771,8 +2033,11 @@
 
   function switchMode(mode) {
     currentMode = mode;
-    document.getElementById('tabSelfFunded').classList.toggle('active', mode === 'selffunded');
-    document.getElementById('tabPPA').classList.toggle('active', mode === 'ppa');
+
+    // Highlight the chosen funding card
+    document.getElementById('fundCardSF').className  = 'funding-card' + (mode === 'selffunded' ? ' active-sf' : '');
+    document.getElementById('fundCardPPA').className = 'funding-card' + (mode === 'ppa' ? ' active-ppa' : '');
+
     document.getElementById('ppaInputs').classList.toggle('visible', mode === 'ppa');
     document.getElementById('comparisonGrid').style.display = mode === 'ppa' ? 'grid' : 'none';
 
@@ -1780,20 +2045,18 @@
       recomputePPA();
     } else if (mode === 'selffunded' && calculationData) {
       const r = calculationData.results;
-      // Restore bar rows
       document.getElementById('breakdownTitle').textContent = 'Year-by-Year Savings — First 10 Years';
       document.getElementById('sfBarRows').style.display    = 'block';
       document.getElementById('ppaMilestoneRows').style.display = 'none';
-      // Restore SF assumptions
       document.getElementById('assumptionsGrid').innerHTML = `
         <div class="assumption-item">Maintenance costs NOT included. Typically £15–£20/kWp/year.</div>
-        <div class="assumption-item">Roof coverage: 80% of total roof area assumed usable, accounting for edge setbacks, obstructions, vents, and inter-row spacing.</div>
-        <div class="assumption-item">Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate.</div>
-        <div class="assumption-item">Export upside: the remaining 10% exported at a nominal 5p/kWh (SEG rate) is shown separately above as additional upside only — excluded from savings as export rates are not guaranteed and vary by DNO and tariff.</div>
+        <div class="assumption-item">Roof coverage: ${Math.round((GROUND_COVERAGE[calculationData.inputs.roofType]||ROOF_COVERAGE)*100)}% of total area assumed usable, accounting for edge setbacks, obstructions, vents, and inter-row spacing.</div>
+        <div class="assumption-item">Self-consumption: 80% of generation is assumed consumed on-site, displacing grid electricity at the import rate.</div>
+        <div class="assumption-item">Export upside: the remaining 20% exported at a nominal 5p/kWh (SEG rate) is shown separately above as additional upside only — excluded from savings as export rates are not guaranteed and vary by DNO and tariff.</div>
         <div class="assumption-item">Panel degradation: 2% per year (industry standard).</div>
         <div class="assumption-item">Electricity price inflation: 3% per year.</div>
         <div class="assumption-item">Panel spec: 450W, 2.27m × 1.13m (2.57m²). System efficiency: 85%.</div>
-        <div class="assumption-item">Carbon factor: 0.233 kg CO₂/kWh (UK grid average).</div>
+        <div class="assumption-item">Carbon factor: 0.196 kg CO₂/kWh (UK grid 2026).</div>
         <div class="assumption-item">Does not include costs for scaffolding, surveys such as structural and also any grid associated costs or upgrades.</div>`;
       buildChart('selffunded', r.totalCost, r.yearlySavings, r.paybackYear || SYSTEM_LIFETIME, null, null);
       document.getElementById('chartTitle').textContent = 'Break-Even Analysis';
@@ -1810,7 +2073,8 @@
     const kwp      = calculationData.results.systemSizeKw;
     const roofType = calculationData.inputs.roofType;
     const ppaRate  = getPPARate(region, kwp, contractYears, roofType);
-    const suffix   = roofType === 'flat' ? ' p/kWh (incl. +0.2p flat roof)' : ' p/kWh';
+    const nonPitched = ['flat','ground','carport'];
+    const suffix = nonPitched.includes(roofType) ? ` p/kWh (incl. +0.2p ${roofType} surcharge)` : ' p/kWh';
     document.getElementById('ppaRateDisplay').textContent = ppaRate.toFixed(1) + suffix;
     ppaData = computePPA(ppaRate, contractYears);
     renderPPAComparison(ppaData);
@@ -1935,8 +2199,8 @@
       <div class="assumption-item">Panel degradation: 2% per year (industry standard).</div>
       <div class="assumption-item">Electricity price inflation: 3% per year. PPA rate escalator: 2% per year.</div>
       <div class="assumption-item">Panel spec: 450W, 2.27m × 1.13m (2.57m²). System efficiency: 85%.</div>
-      <div class="assumption-item">Carbon factor: 0.233 kg CO₂/kWh (UK grid average).</div>
-      <div class="assumption-item">PPA rates for flat roofs include a +0.2p/kWh surcharge. Does not include costs for scaffolding, structural surveys, or grid connection upgrades.</div>`;
+      <div class="assumption-item">Carbon factor: 0.196 kg CO₂/kWh (UK grid 2026).</div>
+      <div class="assumption-item">PPA rates for flat roof, ground mount and carport installations include a +0.2p/kWh surcharge. Does not include costs for scaffolding, structural surveys, or grid connection upgrades.</div>`;
 
     // Chart
     document.getElementById('chartTitle').textContent = '30-Year Cumulative Savings Comparison';
@@ -2018,7 +2282,8 @@
   }
 
   function compute(totalRoofArea, roofType, region, energyPrice, buildings) {
-    const usableRoofArea  = totalRoofArea * ROOF_COVERAGE;
+    const coverage       = GROUND_COVERAGE[roofType] || ROOF_COVERAGE;
+    const usableRoofArea  = totalRoofArea * coverage;
     const maxPanels       = Math.floor(usableRoofArea / PANEL_AREA);
     const systemSizeKw    = (maxPanels * PANEL_POWER) / 1000;
     const hardwareCost    = systemSizeKw * 1000 * PANEL_COST_PER_WATT;
@@ -2108,10 +2373,10 @@
     // Line chart
     buildChart('selffunded', r.totalCost, r.yearlySavings, r.paybackYear || SYSTEM_LIFETIME, null, null);
 
-    // Reset to self-funded tab on new calculation
+    // Reset to self-funded card on new calculation
     currentMode = 'selffunded';
-    document.getElementById('tabSelfFunded').classList.add('active');
-    document.getElementById('tabPPA').classList.remove('active');
+    document.getElementById('fundCardSF').className  = 'funding-card active-sf';
+    document.getElementById('fundCardPPA').className = 'funding-card';
     document.getElementById('ppaInputs').classList.remove('visible');
     document.getElementById('comparisonGrid').style.display = 'none';
     document.getElementById('chartTitle').textContent = 'Break-Even Analysis';
@@ -2375,7 +2640,9 @@
     ly = dataRow('No. of Buildings:', inp.buildingCount + (inp.buildingCount > 1 ? ' buildings (portfolio)' : ' building'), C1L, ly, COL_W);
     ly = dataRow('Total Roof Area:', r.roofArea.toFixed(0) + ' m2', C1L, ly, COL_W);
     ly = dataRow('Usable Roof (80%):', (r.roofArea * 0.8).toFixed(0) + ' m2', C1L, ly, COL_W);
-    ly = dataRow('Roof Type:', inp.roofType === 'pitched' ? 'Pitched' : 'Flat', C1L, ly, COL_W);
+    const mountLabels = { pitched:'Pitched Roof', flat:'Flat Roof', ground:'Ground Mount', carport:'Car Port' };
+    const costLabels  = { pitched:'GBP 800 / kWp', flat:'GBP 900 / kWp', ground:'GBP 950 / kWp', carport:'GBP 1,350 / kWp' };
+    ly = dataRow('Mount Type:', mountLabels[inp.roofType] || inp.roofType, C1L, ly, COL_W);
     ly = dataRow('Region:', inp.region.charAt(0).toUpperCase() + inp.region.slice(1), C1L, ly, COL_W);
 
     ly += 5;
@@ -2401,9 +2668,9 @@
     // RIGHT: Environmental & Key Inputs
     ry = sectionHead('Environmental & Key Inputs', GREEN, [236, 253, 245], C2L, ry, COL_W);
     ry = dataRow('CO2 Offset (30yr):', r.carbonOffset.toFixed(1) + ' tonnes', C2L, ry, COL_W);
-    ry = dataRow('Self-Consumption Rate:', '90%', C2L, ry, COL_W);
+    ry = dataRow('Self-Consumption Rate:', '80%', C2L, ry, COL_W);
     ry = dataRow('Energy Price (yr 1):', inp.energyPrice + 'p / kWh', C2L, ry, COL_W);
-    ry = dataRow('Cost Basis:', inp.roofType === 'pitched' ? 'GBP 800 / kWp' : 'GBP 900 / kWp', C2L, ry, COL_W);
+    ry = dataRow('Cost Basis:', costLabels[inp.roofType] || '—', C2L, ry, COL_W);
 
     // ── CHART ─────────────────────────────────────────────────────────
     let chartY = Math.max(ly, ry) + 6;
@@ -2434,12 +2701,12 @@
     T('normal', 7.2, DGREY);
     const assumptions = [
       'Maintenance costs are NOT included. Annual maintenance typically costs GBP 15-20 per kWp per year.',
-      'Roof coverage: 80% of total roof area assumed usable, accounting for edge setbacks, obstructions, vents and inter-row spacing.',
-      'Self-consumption: 90% of generation is assumed consumed on-site, displacing grid electricity at the import rate.',
-      '*Export upside: the remaining 10% of generation exported is valued at a nominal 5p/kWh (SEG rate) — GBP ' + fmt(r.totalExportRevenue) + ' over 30 years. This is excluded from all savings calculations as export rates are not guaranteed and vary by DNO and tariff.',
+      'Roof/mount coverage: 80-90% of total area assumed usable depending on mount type, accounting for edge setbacks, obstructions, and inter-row spacing.',
+      'Self-consumption: 80% of generation is assumed consumed on-site, displacing grid electricity at the import rate.',
+      '*Export upside: the remaining 20% of generation exported is valued at a nominal 5p/kWh (SEG rate) — GBP ' + fmt(r.totalExportRevenue) + ' over 30 years. This is excluded from all savings calculations as export rates are not guaranteed and vary by DNO and tariff.',
       'Panel degradation: 2% per year. Electricity price inflation: 3% per year.',
       'Panel specification: 450W, 2.27m x 1.13m. Overall system efficiency: 85%.',
-      'Carbon factor: 0.233 kg CO2 per kWh (UK grid average).',
+      'Carbon factor: 0.196 kg CO2 per kWh (UK grid 2026).',
       'Does not include costs for scaffolding, structural surveys, or any grid connection costs or upgrades.',
     ];
     assumptions.forEach(function(a, i) {
@@ -2607,10 +2874,11 @@
       'PPA rates sourced from regional rate card based on system size and contract length.',
       'PPA escalator: 2% per year. Grid price escalator: 3% per year.',
       'Post-contract (after year ' + ppa.contractYears + '): energy assumed free — full grid price valued as saving.',
-      'Self-consumption: 90% on-site. Panel degradation: 2% per year.',
-      'Roof coverage: 80% of total roof area assumed usable.',
-      'Carbon factor: 0.233 kg CO2/kWh (UK grid). System efficiency: 85%.',
+      'All generated energy purchased by the business. Sized so typical usage is 80–100%; surplus exported if available.',
+      'Roof/mount coverage: 80–90% of total area assumed usable depending on mount type.',
+      'Carbon factor: 0.196 kg CO2/kWh (UK grid 2026). System efficiency: 85%.',
       'PPA: no upfront cost, no maintenance liability. Funder owns, operates and maintains the system.',
+      'Flat roof, ground mount and carport installations include a +0.2p/kWh PPA surcharge.',
       'Does not include costs for scaffolding, structural surveys, or any grid connection upgrades.',
     ];
     assumptions.forEach(function(a, i) {
