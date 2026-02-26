@@ -1956,9 +1956,14 @@
   }
 
   function closeEmailModal(event) {
-    if (!event || event.target === document.getElementById('emailModal')) {
-      document.getElementById('emailModal').style.display = 'none';
-    }
+    // Only block if the click was on a child element (not the backdrop itself)
+    if (event && event.target !== document.getElementById('emailModal')) return;
+    const modal = document.getElementById('emailModal');
+    const btn   = modal.querySelector('.modal-send');
+    modal.style.display = 'none';
+    document.getElementById('modalMsg').style.display = 'none';
+    document.getElementById('sendBtnText').textContent = 'Send Report';
+    btn.disabled = false;
   }
 
   async function sendEmailReport() {
@@ -2015,13 +2020,8 @@
       // Update UI
       txt.textContent = 'Sent!';
       showModalMsg('Done! PDF downloading now. Martyn will be in touch shortly.', 'success');
-      // Close after 2s so user sees the success message
-      setTimeout(() => {
-        document.getElementById('emailModal').style.display = 'none';
-        document.getElementById('modalMsg').style.display = 'none';
-        btn.disabled = false;
-        txt.textContent = 'Send Report';
-      }, 2000);
+      // Auto-close after 1.5s — closeEmailModal() with no args always closes
+      setTimeout(() => closeEmailModal(), 1500);
 
     } catch (err) {
       clearTimeout(safetyTimer);
@@ -2569,11 +2569,29 @@
 
   async function downloadPDF() {
     if (!calculationData) return;
-    if (currentMode === 'ppa' && ppaData) {
-      downloadPPAPDF();
-    } else {
-      downloadSelfFundedPDF();
+
+    // Always produce a 2-page PDF: page 1 = Self-Funded, page 2 = PPA
+    // Ensure ppaData is available — compute on the fly if user hasn't visited PPA tab
+    let livePpaData = ppaData;
+    if (!livePpaData) {
+      const contractYears = parseInt(document.getElementById('ppaContractLength').value) || 20;
+      const ppaRate = getPPARate(
+        calculationData.inputs.region,
+        calculationData.results.systemSizeKw,
+        contractYears,
+        calculationData.inputs.roofType
+      );
+      livePpaData = computePPA(ppaRate, contractYears);
     }
+
+    // Page 1: Self-Funded
+    const doc = await buildSelfFundedPDFDoc();
+
+    // Page 2: PPA — add a new page and draw PPA content directly into the same doc
+    doc.addPage();
+    drawPPAContent(doc, livePpaData);
+
+    doc.save('Solar-Proposal-' + calculationData.date.replace(/\//g, '-') + '.pdf');
   }
 
   async function buildSelfFundedPDFDoc() {
@@ -2803,12 +2821,9 @@
     doc.save('Solar-Proposal-' + calculationData.date.replace(/\//g, '-') + '.pdf');
   }
 
-  async function buildPPAPDFDoc() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  function drawPPAContent(doc, ppa) {
     const r   = calculationData.results;
     const inp = calculationData.inputs;
-    const ppa = ppaData;
 
     const PW = 210, PH = 297, ML = 14, MR = 14, CW = PW - ML - MR;
     const COL_GAP = 6, COL_W = (CW - COL_GAP) / 2;
@@ -2836,7 +2851,7 @@
       return y + ROW_H;
     }
 
-    // HEADER
+    // PAGE HEADER — sky blue stripe + title
     doc.setFillColor(...SKY); doc.rect(0, 0, PW, 2.5, 'F');
     T('bold', 17, BLACK); doc.text('Industrial & Commercial Solar — PPA Analysis', ML, 13);
     T('normal', 9, SLATE); doc.text('Power Purchase Agreement  —  Indicative Proposal', ML, 20);
@@ -2845,7 +2860,7 @@
 
     const startY = 28;
 
-    // LEFT: System + PPA Config
+    // LEFT COLUMN: System + PPA Config
     let ly = sectionBar('Proposed System', BLUE, [235,244,255], C1L, startY, COL_W);
     ly = dataRow('System Size:', r.systemSizeKw.toFixed(2) + ' kWp', C1L, ly, COL_W);
     ly = dataRow('No. of Panels:', fmt(r.maxPanels) + ' x 450W', C1L, ly, COL_W);
@@ -2862,7 +2877,7 @@
     ly = dataRow('Grid Escalator:', '3% per year', C1L, ly, COL_W);
     ly = dataRow('Upfront Cost to You:', 'GBP 0', C1L, ly, COL_W);
 
-    // RIGHT: Financials + Comparison
+    // RIGHT COLUMN: Financials + Comparison
     let ry = sectionBar('PPA Financial Summary', AMBER, [255,251,235], C2L, startY, COL_W);
     ry = dataRow('Savings (contract term):', 'GBP ' + fmt(ppa.contractSavings), C2L, ry, COL_W);
     ry = dataRow('Free energy (post-contract):', 'GBP ' + fmt(ppa.postContractSavings), C2L, ry, COL_W);
@@ -2896,8 +2911,8 @@
       'PPA rates sourced from regional rate card based on system size and contract length.',
       'PPA escalator: 2% per year. Grid price escalator: 3% per year.',
       'Post-contract (after year ' + ppa.contractYears + '): energy assumed free — full grid price valued as saving.',
-      'All generated energy purchased by the business. Sized so typical usage is 80–100%; surplus exported if available.',
-      'Roof/mount coverage: 80–90% of total area assumed usable depending on mount type.',
+      'All generated energy purchased by the business. Sized so typical usage is 80-100%; surplus exported if available.',
+      'Roof/mount coverage: 80-90% of total area assumed usable depending on mount type.',
       'Carbon factor: 0.196 kg CO2/kWh (UK grid 2026). System efficiency: 85%.',
       'PPA: no upfront cost, no maintenance liability. Funder owns, operates and maintains the system.',
       'Flat roof, ground mount and carport installations include a +0.2p/kWh PPA surcharge.',
@@ -2908,26 +2923,38 @@
       doc.text(lines, ML, chartY); chartY += lines.length * 3.6 + 2;
     });
 
-    // IMPORTANT NOTICE
+    // IMPORTANT NOTICE BOX
     doc.setDrawColor(...LGREY); doc.setLineWidth(0.4); doc.line(ML, chartY, PW - MR, chartY); chartY += 4;
-    const discText2 = 'This is a rough, hypothetical calculation based on very basic input information. For a more detailed design and accurate costings and savings please contact:';
-    const contactLine2 = 'Martyn Sheridan  |  martynsheridan@gmail.com  |  +44 (0) 787 2015769';
+    const discText = 'This is a rough, hypothetical calculation based on very basic input information. For a more detailed design and accurate costings and savings please contact:';
+    const contactLine = 'Martyn Sheridan  |  martynsheridan@gmail.com  |  +44 (0) 787 2015769';
     T('normal', 7.2, [100,60,0]);
-    const dL2 = doc.splitTextToSize(discText2, CW - 10);
+    const dL = doc.splitTextToSize(discText, CW - 10);
     T('bold', 7.5, [130,80,0]);
-    const cL2 = doc.splitTextToSize(contactLine2, CW - 10);
-    const boxH2 = 5 + 5 + 2 + dL2.length * 3.8 + 2 + cL2.length * 3.8 + 4;
+    const cL = doc.splitTextToSize(contactLine, CW - 10);
+    const boxH = 5 + 5 + 2 + dL.length * 3.8 + 2 + cL.length * 3.8 + 4;
     doc.setFillColor(255,251,235); doc.setDrawColor(...AMBER); doc.setLineWidth(0.4);
-    doc.roundedRect(ML, chartY, CW, boxH2, 1.5, 1.5, 'FD');
-    doc.setFillColor(...AMBER); doc.rect(ML, chartY, 3, boxH2, 'F');
+    doc.roundedRect(ML, chartY, CW, boxH, 1.5, 1.5, 'FD');
+    doc.setFillColor(...AMBER); doc.rect(ML, chartY, 3, boxH, 'F');
     T('bold', 7.5, RED); doc.text('IMPORTANT NOTICE', ML + 6, chartY + 5);
-    T('normal', 7.2, [100,60,0]); doc.text(dL2, ML + 6, chartY + 12);
-    T('bold', 7.5, [130,80,0]); doc.text(cL2, ML + 6, chartY + 12 + dL2.length * 3.8 + 2);
+    T('normal', 7.2, [100,60,0]); doc.text(dL, ML + 6, chartY + 12);
+    T('bold', 7.5, [130,80,0]); doc.text(cL, ML + 6, chartY + 12 + dL.length * 3.8 + 2);
 
+    // FOOTER
     doc.setFillColor(...SKY); doc.rect(0, PH - 3, PW, 3, 'F');
     T('italic', 7, MGREY);
     doc.text('Indicative PPA analysis only. Actual PPA terms subject to full site survey and funder agreement.', PW/2, PH-6, { align: 'center' });
+  }
 
+  // Thin wrapper — standalone PPA PDF download
+  async function buildPPAPDFDoc() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const livePpa = ppaData || (() => {
+      const contractYears = parseInt(document.getElementById('ppaContractLength').value) || 20;
+      const ppaRate = getPPARate(calculationData.inputs.region, calculationData.results.systemSizeKw, contractYears, calculationData.inputs.roofType);
+      return computePPA(ppaRate, contractYears);
+    })();
+    drawPPAContent(doc, livePpa);
     return doc;
   }
 
