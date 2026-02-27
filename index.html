@@ -2574,7 +2574,7 @@
   async function downloadPDF() {
     if (!calculationData) return;
 
-    // Always produce a 2-page PDF: page 1 = Self-Funded, page 2 = PPA
+    // Always produce a 2-page PDF: page 1 = PPA, page 2 = Self-Funded
     // Ensure ppaData is available — compute on the fly if user hasn't visited PPA tab
     let livePpaData = ppaData;
     if (!livePpaData) {
@@ -2588,19 +2588,19 @@
       livePpaData = computePPA(ppaRate, contractYears);
     }
 
-    // Page 1: Self-Funded
-    const doc = await buildSelfFundedPDFDoc();
-
-    // Page 2: PPA — add a new page and draw PPA content directly into the same doc
-    doc.addPage();
+    // Page 1: PPA
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     await drawPPAContent(doc, livePpaData);
+
+    // Page 2: Self-Funded
+    doc.addPage();
+    await drawSelfFundedContent(doc);
 
     doc.save('Solar-Proposal-' + calculationData.date.replace(/\//g, '-') + '.pdf');
   }
 
-  async function buildSelfFundedPDFDoc() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  async function drawSelfFundedContent(doc) {
     const r   = calculationData.results;
     const inp = calculationData.inputs;
 
@@ -2832,7 +2832,12 @@
     // ── FOOTER ────────────────────────────────────────────────────────
     doc.setFillColor(...AMBER);
     doc.rect(0, PH - 3, PW, 3, 'F');
+  }
 
+  async function buildSelfFundedPDFDoc() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    await drawSelfFundedContent(doc);
     return doc;
   }
 
