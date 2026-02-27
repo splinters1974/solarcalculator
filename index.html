@@ -2741,7 +2741,15 @@
     const chartImg = document.getElementById('savingsChart').toDataURL('image/png');
     const chartH   = 58;
     doc.addImage(chartImg, 'PNG', ML, chartY, CW, chartH);
-    chartY += chartH + 5;
+    chartY += chartH + 2;
+    // Chart legend
+    doc.setLineWidth(1.5);
+    doc.setDrawColor(245, 158, 11); doc.line(ML, chartY, ML + 8, chartY);
+    doc.setDrawColor(56, 189, 248); doc.setLineDashPattern([1.5, 1.5], 0); doc.line(ML + 55, chartY, ML + 63, chartY); doc.setLineDashPattern([], 0);
+    T('normal', 7, DGREY);
+    doc.text('Cumulative Savings', ML + 10, chartY + 0.5);
+    doc.text('Initial Investment', ML + 65, chartY + 0.5);
+    chartY += 5;
 
     // ── ASSUMPTIONS ───────────────────────────────────────────────────
     doc.setDrawColor(...LGREY);
@@ -2924,7 +2932,17 @@
     // Restore SF chart
     buildChart('selffunded', r2.totalCost, r2.yearlySavings, r2.paybackYear || 30, null, null);
     doc.addImage(chartImg, 'PNG', ML, chartY, CW, 58);
-    chartY += 63;
+    chartY += 60;
+    // Chart legend
+    doc.setLineWidth(1.5);
+    doc.setDrawColor(245, 158, 11); doc.line(ML, chartY, ML + 8, chartY);
+    doc.setDrawColor(56, 189, 248); doc.line(ML + 58, chartY, ML + 66, chartY);
+    doc.setDrawColor(245, 158, 11); doc.setLineDashPattern([1.5, 1.5], 0); doc.line(ML + 108, chartY, ML + 116, chartY); doc.setLineDashPattern([], 0);
+    T('normal', 7, DGREY);
+    doc.text('Self-Funded Savings', ML + 10, chartY + 0.5);
+    doc.text('PPA Savings', ML + 68, chartY + 0.5);
+    doc.text('SF Investment', ML + 118, chartY + 0.5);
+    chartY += 5;
 
     // ASSUMPTIONS
     doc.setDrawColor(...LGREY); doc.setLineWidth(0.4); doc.line(ML, chartY, PW - MR, chartY);
