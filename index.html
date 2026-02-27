@@ -2595,12 +2595,12 @@
 
     // Page 2: Self-Funded
     doc.addPage();
-    await drawSelfFundedContent(doc);
+    await drawSelfFundedContent(doc, livePpaData);
 
     doc.save('Solar-Proposal-' + calculationData.date.replace(/\//g, '-') + '.pdf');
   }
 
-  async function drawSelfFundedContent(doc) {
+  async function drawSelfFundedContent(doc, ppa) {
     const r   = calculationData.results;
     const inp = calculationData.inputs;
 
@@ -2732,23 +2732,27 @@
     chartY += 5;
 
     T('bold', 9, BLUE);
-    doc.text('Break-Even Analysis: Cumulative Savings vs Initial Investment', PW / 2, chartY, { align: 'center' });
+    doc.text('30-Year Cumulative Savings: Self-Funded vs PPA', PW / 2, chartY, { align: 'center' });
     chartY += 4;
 
-    // Ensure SF chart is shown before capture — wait for Chart.js to finish rendering
-    buildChart('selffunded', r.totalCost, r.yearlySavings, r.paybackYear || 30, null, null);
+    // Build PPA comparison chart and capture it — wait for Chart.js to finish rendering
+    buildChart('ppa', r.totalCost, r.yearlySavings, r.paybackYear || 30, ppa.yearlySavings, ppa.contractYears);
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const chartImg = document.getElementById('savingsChart').toDataURL('image/png');
+    // Restore SF chart
+    buildChart('selffunded', r.totalCost, r.yearlySavings, r.paybackYear || 30, null, null);
     const chartH   = 58;
     doc.addImage(chartImg, 'PNG', ML, chartY, CW, chartH);
     chartY += chartH + 2;
     // Chart legend
     doc.setLineWidth(1.5);
     doc.setDrawColor(245, 158, 11); doc.line(ML, chartY, ML + 8, chartY);
-    doc.setDrawColor(56, 189, 248); doc.setLineDashPattern([1.5, 1.5], 0); doc.line(ML + 55, chartY, ML + 63, chartY); doc.setLineDashPattern([], 0);
+    doc.setDrawColor(56, 189, 248); doc.line(ML + 58, chartY, ML + 66, chartY);
+    doc.setDrawColor(245, 158, 11); doc.setLineDashPattern([1.5, 1.5], 0); doc.line(ML + 108, chartY, ML + 116, chartY); doc.setLineDashPattern([], 0);
     T('normal', 7, DGREY);
-    doc.text('Cumulative Savings', ML + 10, chartY + 0.5);
-    doc.text('Initial Investment', ML + 65, chartY + 0.5);
+    doc.text('Self-Funded Savings', ML + 10, chartY + 0.5);
+    doc.text('PPA Savings', ML + 68, chartY + 0.5);
+    doc.text('SF Investment', ML + 118, chartY + 0.5);
     chartY += 5;
 
     // ── ASSUMPTIONS ───────────────────────────────────────────────────
@@ -2837,7 +2841,12 @@
   async function buildSelfFundedPDFDoc() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    await drawSelfFundedContent(doc);
+    const livePpa = ppaData || (() => {
+      const contractYears = parseInt(document.getElementById('ppaContractLength').value) || 20;
+      const ppaRate = getPPARate(calculationData.inputs.region, calculationData.results.systemSizeKw, contractYears, calculationData.inputs.roofType);
+      return computePPA(ppaRate, contractYears);
+    })();
+    await drawSelfFundedContent(doc, livePpa);
     return doc;
   }
 
