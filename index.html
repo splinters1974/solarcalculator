@@ -2732,7 +2732,7 @@
     chartY += 5;
 
     T('bold', 9, BLUE);
-    doc.text('30-Year Cumulative Savings: Self-Funded vs PPA', PW / 2, chartY, { align: 'center' });
+    doc.text('Break-Even Analysis: Cumulative Savings vs Initial Investment', PW / 2, chartY, { align: 'center' });
     chartY += 4;
 
     // Ensure SF chart is shown before capture — wait for Chart.js to finish rendering
@@ -2914,7 +2914,7 @@
     doc.setDrawColor(...LGREY); doc.setLineWidth(0.4); doc.line(ML, chartY, PW - MR, chartY);
     chartY += 5;
     T('bold', 9, BLUE);
-    doc.text('Break-Even Analysis: Cumulative Savings vs Initial Investment', PW / 2, chartY, { align: 'center' });
+    doc.text('30-Year Cumulative Savings: Self-Funded vs PPA', PW / 2, chartY, { align: 'center' });
     chartY += 4;
     // Build PPA-mode chart and capture it — wait for Chart.js to finish rendering
     const r2 = calculationData.results;
