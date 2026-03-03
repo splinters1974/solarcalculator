@@ -6,7 +6,7 @@
   <title>Industrial & Commercial Solar Calculator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -2914,7 +2914,7 @@
     doc.setDrawColor(...LGREY); doc.setLineWidth(0.4); doc.line(ML, chartY, PW - MR, chartY);
     chartY += 5;
     T('bold', 9, BLUE);
-    doc.text('Break-Even Analysis: Cumulative Savings vs Initial Investment', PW / 2, chartY, { align: 'center' });
+    doc.text('30-Year Cumulative Savings: Self-Funded vs PPA', PW / 2, chartY, { align: 'center' });
     chartY += 4;
     // Build PPA-mode chart and capture it — wait for Chart.js to finish rendering
     const r2 = calculationData.results;
