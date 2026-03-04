@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lighting Retrofit Calculator</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .display-font { font-family: 'Crimson Text', serif; }
+        .input-focus { transition: all 0.2s ease; }
+        .input-focus:focus {
+            outline: none;
+            border-color: #92400e;
+            box-shadow: 0 0 0 3px rgba(146, 64, 14, 0.1);
+        }
+        .card-fade { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-slate-50">
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState } = React;
+
+        const Plus = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        );
+        const X = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        );
+        const ChevronRight = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        );
+
+        // Convert "HH:MM" to fractional hours
+        const toHours = t => {
+            const [h, m] = t.split(':').map(Number);
+            return h + m / 60;
+        };
+
+        const fmt    = n => n.toLocaleString('en-GB', { maximumFractionDigits: 0 });
+        const fmtDec = (n, d = 1) => n.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+        const SENSOR_COST_PER_FITTING = 20; // £ per fitting for presence/daylight sensors
+        const SENSOR_RUNTIME_REDUCTION = 0.20; // 20% fewer hours when sensors fitted
+
+        const LightingCalculator = () => {
+            const [step, setStep]                 = useState('setup');
+            const [buildingType, setBuildingType] = useState('office');
+            const [costPerFitting, setCostPerFitting] = useState('');
+            const [quickEntry, setQuickEntry]     = useState(false);
+            const [quickRooms, setQuickRooms]     = useState('');
+            const [quickBulbs, setQuickBulbs]     = useState('');
+            const [rooms, setRooms]               = useState([]);
+            const [currentLightType, setCurrentLightType] = useState('incandescent');
+            const [addSensors, setAddSensors]     = useState(false);
+            const [electricityRate, setElectricityRate] = useState(25); // pence / kWh
+            const [paybackYears, setPaybackYears] = useState(5);
+            const [operatingHours, setOperatingHours] = useState({
+                monday:    { start: '08:00', end: '18:00' },
+                tuesday:   { start: '08:00', end: '18:00' },
+                wednesday: { start: '08:00', end: '18:00' },
+                thursday:  { start: '08:00', end: '18:00' },
+                friday:    { start: '08:00', end: '18:00' },
+                saturday:  { start: 'off',   end: 'off'   },
+                sunday:    { start: 'off',   end: 'off'   },
+            });
+
+            const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+
+            const lightingSpecs = {
+                incandescent: { currentW: 60, newW: 9  },
+                halogen:      { currentW: 50, newW: 7  },
+                fluorescent:  { currentW: 35, newW: 18 },
+                olderled:     { currentW: 12, newW: 9  },
+            };
+
+            const defaultCosts = {
+                office:     { min: 80,  max: 140 },
+                education:  { min: 90,  max: 160 },
+                healthcare: { min: 100, max: 180 },
+                retail:     { min: 90,  max: 170 },
+                warehouse:  { min: 140, max: 280 },
+                carpark:    { min: 160, max: 320 },
+            };
+
+            const baseInstallCost = costPerFitting
+                ? parseFloat(costPerFitting)
+                : (defaultCosts[buildingType].min + defaultCosts[buildingType].max) / 2;
+
+            // ── Hours ─────────────────────────────────────────────────────────
+            const weeklyHours = days.reduce((total, day) => {
+                if (operatingHours[day].start === 'off') return total;
+                return total + Math.max(0,
+                    toHours(operatingHours[day].end) - toHours(operatingHours[day].start)
+                );
+            }, 0);
+            const annualHours = weeklyHours * 52;
+
+            // ── Fittings ──────────────────────────────────────────────────────
+            const totalBulbs = quickEntry
+                ? (parseInt(quickRooms) || 0) * (parseInt(quickBulbs) || 0)
+                : rooms.reduce((sum, r) => sum + (parseInt(r.bulbs) || 0), 0);
+
+            // ── Energy ────────────────────────────────────────────────────────
+            const { currentW, newW } = lightingSpecs[currentLightType];
+            const effectiveAnnualHours = annualHours * (addSensors ? 1 - SENSOR_RUNTIME_REDUCTION : 1);
+
+            const currentKwh = (totalBulbs * currentW * annualHours)          / 1000;
+            const newKwh     = (totalBulbs * newW     * effectiveAnnualHours) / 1000;
+            const kwhSaving  = currentKwh - newKwh;
+
+            // ── Costs — electricity rate is pence/kWh, divide by 100 for £ ──
+            const rateGBP         = electricityRate / 100;
+            const currentAnnualCost = currentKwh * rateGBP;
+            const newAnnualCost     = newKwh     * rateGBP;
+            const annualSaving      = currentAnnualCost - newAnnualCost;
+            const currentMonthlyBill = currentAnnualCost / 12;
+
+            // ── Project cost ──────────────────────────────────────────────────
+            const fittingCost      = baseInstallCost + (addSensors ? SENSOR_COST_PER_FITTING : 0);
+            const retrofitCost     = totalBulbs * fittingCost;
+            const totalProjectCost = retrofitCost * 1.08; // 8% overhead
+
+            // ── Finance options ───────────────────────────────────────────────
+            // Buy outright
+            const paybackPeriod = annualSaving > 0
+                ? Math.ceil(totalProjectCost / (annualSaving / 12))
+                : Infinity;
+            const buyOutROI = totalProjectCost > 0
+                ? ((annualSaving * paybackYears) - totalProjectCost) / totalProjectCost * 100
+                : 0;
+
+            // Finance lease: project cost spread straight-line (simplified, no interest)
+            const leaseMonthly    = totalProjectCost / (paybackYears * 12);
+            const leaseNetMonthly = (annualSaving / 12) - leaseMonthly;
+
+            // Energy as a Service: customer pays 75% of current bill, no upfront cost
+            const eaasMonthly    = currentMonthlyBill * 0.75;
+            const eaasNetMonthly = currentMonthlyBill - eaasMonthly;
+
+            // ── Room helpers ──────────────────────────────────────────────────
+            const addRoom    = () => setRooms([...rooms, { id: Date.now(), name: '', bulbs: '' }]);
+            const updateRoom = (id, field, value) =>
+                setRooms(rooms.map(r => r.id === id ? { ...r, [field]: value } : r));
+            const removeRoom = id => setRooms(rooms.filter(r => r.id !== id));
+
+            const toggleDay = day => setOperatingHours({
+                ...operatingHours,
+                [day]: operatingHours[day].start === 'off'
+                    ? { start: '08:00', end: '18:00' }
+                    : { start: 'off',   end: 'off'   },
+            });
+
+            const handleNext = () => {
+                if (step === 'setup') {
+                    if (!quickEntry && rooms.length === 0) {
+                        alert('Please add at least one room or switch to Quick Entry');
+                        return;
+                    }
+                    if (quickEntry && (!quickRooms || !quickBulbs)) {
+                        alert('Please enter number of rooms and average bulbs per room');
+                        return;
+                    }
+                    if (quickEntry && (parseInt(quickRooms) <= 0 || parseInt(quickBulbs) <= 0)) {
+                        alert('Rooms and bulbs must be greater than zero');
+                        return;
+                    }
+                    setStep('hours');
+                } else if (step === 'hours') {
+                    if (weeklyHours === 0) {
+                        alert('Please set at least one operating day');
+                        return;
+                    }
+                    setStep('results');
+                }
+            };
+
+            // ─────────────────────────────────────────────────────────────────
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+
+                    {/* ══ STEP 1: SETUP ══════════════════════════════════════════ */}
+                    {step === 'setup' && (
+                        <div className="max-w-2xl mx-auto px-6 py-12 card-fade">
+                            <div className="mb-12">
+                                <h1 className="display-font text-5xl font-semibold text-slate-900 mb-2">Lighting Retrofit</h1>
+                                <p className="text-slate-600 text-lg">Estimate savings and compare finance options</p>
+                            </div>
+
+                            <div className="space-y-8">
+                                {/* Building Type */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-900 mb-3">Building Type</label>
+                                    <select
+                                        value={buildingType}
+                                        onChange={e => setBuildingType(e.target.value)}
+                                        className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white input-focus text-slate-900"
+                                    >
+                                        <option value="office">Office</option>
+                                        <option value="education">Education</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="retail">Retail</option>
+                                        <option value="warehouse">Warehouse</option>
+                                        <option value="carpark">Car Park / External</option>
+                                    </select>
+                                    <p className="text-xs text-slate-500 mt-2">
+                                        Default: £{defaultCosts[buildingType].min}–£{defaultCosts[buildingType].max} per fitting
+                                    </p>
+                                </div>
+
+                                {/* Cost Override */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-900 mb-3">Cost Per Fitting (Optional)</label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={costPerFitting}
+                                            onChange={e => setCostPerFitting(e.target.value)}
+                                            placeholder={String((defaultCosts[buildingType].min + defaultCosts[buildingType].max) / 2)}
+                                            className="flex-1 px-4 py-3 border border-slate-200 rounded-lg input-focus"
+                                        />
+                                        <span className="text-slate-600">£/fitting</span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-2">Leave blank to use default for this building type</p>
+                                </div>
+
+                                {/* Current Lighting Type */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-900 mb-3">Current Lighting Type</label>
+                                    <select
+                                        value={currentLightType}
+                                        onChange={e => setCurrentLightType(e.target.value)}
+                                        className="w-full px-4 py-3 border border-slate-200 rounded-lg bg-white input-focus text-slate-900"
+                                    >
+                                        <option value="incandescent">Incandescent (60W → 9W LED)</option>
+                                        <option value="halogen">Halogen (50W → 7W LED)</option>
+                                        <option value="fluorescent">Fluorescent/CFL (35W → 18W LED)</option>
+                                        <option value="olderled">Older LED (12W → 9W LED)</option>
+                                    </select>
+                                </div>
+
+                                {/* Electricity Rate */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-900 mb-3">Electricity Rate</label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            step="0.5"
+                                            value={electricityRate}
+                                            onChange={e => setElectricityRate(Math.max(1, parseFloat(e.target.value) || 25))}
+                                            className="flex-1 px-4 py-3 border border-slate-200 rounded-lg input-focus"
+                                        />
+                                        <span className="text-slate-600">p/kWh</span>
+                                    </div>
+                                </div>
+
+                                {/* Entry Mode Toggle */}
+                                <div className="pt-4 border-t border-slate-200">
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={() => setQuickEntry(false)}
+                                            className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${!quickEntry ? 'bg-amber-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                        >
+                                            Detailed Rooms
+                                        </button>
+                                        <button
+                                            onClick={() => setQuickEntry(true)}
+                                            className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${quickEntry ? 'bg-amber-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                        >
+                                            Quick Entry
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Detailed Rooms */}
+                                {!quickEntry && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="font-semibold text-slate-900">Rooms</h3>
+                                            <button
+                                                onClick={addRoom}
+                                                className="flex items-center gap-2 px-3 py-2 bg-amber-50 text-amber-900 rounded-lg hover:bg-amber-100 transition text-sm font-medium"
+                                            >
+                                                <Plus size={16} /> Add Room
+                                            </button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {rooms.map(room => (
+                                                <div key={room.id} className="flex gap-3 items-end p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Room name (optional)"
+                                                        value={room.name}
+                                                        onChange={e => updateRoom(room.id, 'name', e.target.value)}
+                                                        className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded input-focus text-sm"
+                                                    />
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="number"
+                                                            min="1"
+                                                            placeholder="Bulbs"
+                                                            value={room.bulbs}
+                                                            onChange={e => updateRoom(room.id, 'bulbs', e.target.value)}
+                                                            className="w-20 px-3 py-2 bg-white border border-slate-200 rounded input-focus text-sm"
+                                                        />
+                                                        <span className="text-slate-600 text-sm">bulbs</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeRoom(room.id)}
+                                                        className="p-2 text-slate-400 hover:text-red-500 transition"
+                                                    >
+                                                        <X size={18} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Quick Entry */}
+                                {quickEntry && (
+                                    <div className="flex gap-4">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-semibold text-slate-900 mb-2">Number of Rooms</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={quickRooms}
+                                                onChange={e => setQuickRooms(e.target.value)}
+                                                placeholder="e.g. 12"
+                                                className="w-full px-4 py-3 border border-slate-200 rounded-lg input-focus"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-semibold text-slate-900 mb-2">Avg Bulbs Per Room</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={quickBulbs}
+                                                onChange={e => setQuickBulbs(e.target.value)}
+                                                placeholder="e.g. 8"
+                                                className="w-full px-4 py-3 border border-slate-200 rounded-lg input-focus"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Fitting summary */}
+                                {totalBulbs > 0 && (
+                                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                        <p className="text-sm text-amber-900">
+                                            <span className="font-semibold">{fmt(totalBulbs)} fittings</span>
+                                            {' '}• £{baseInstallCost.toFixed(0)}/fitting base cost
+                                        </p>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleNext}
+                                    disabled={totalBulbs === 0}
+                                    className="w-full py-3 bg-amber-900 text-white rounded-lg font-semibold hover:bg-amber-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    Next: Operating Hours <ChevronRight size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ══ STEP 2: HOURS ═════════════════════════════════════════ */}
+                    {step === 'hours' && (
+                        <div className="max-w-2xl mx-auto px-6 py-12 card-fade">
+                            <div className="mb-12">
+                                <h1 className="display-font text-5xl font-semibold text-slate-900 mb-2">Operating Hours</h1>
+                                <p className="text-slate-600 text-lg">When are the lights on?</p>
+                            </div>
+
+                            <div className="space-y-6">
+                                {days.map(day => (
+                                    <div key={day} className="p-4 border border-slate-200 rounded-lg">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <label className="font-semibold text-slate-900 capitalize">{day}</label>
+                                            <button
+                                                onClick={() => toggleDay(day)}
+                                                className={`text-xs font-semibold px-3 py-1 rounded transition ${
+                                                    operatingHours[day].start === 'off'
+                                                        ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                                        : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                }`}
+                                            >
+                                                {operatingHours[day].start === 'off' ? 'Off' : 'On'}
+                                            </button>
+                                        </div>
+                                        {operatingHours[day].start !== 'off' && (
+                                            <div className="flex gap-3 items-center">
+                                                <input
+                                                    type="time"
+                                                    value={operatingHours[day].start}
+                                                    onChange={e => setOperatingHours({
+                                                        ...operatingHours,
+                                                        [day]: { ...operatingHours[day], start: e.target.value },
+                                                    })}
+                                                    className="flex-1 px-3 py-2 border border-slate-200 rounded input-focus"
+                                                />
+                                                <span className="text-slate-600">to</span>
+                                                <input
+                                                    type="time"
+                                                    value={operatingHours[day].end}
+                                                    onChange={e => setOperatingHours({
+                                                        ...operatingHours,
+                                                        [day]: { ...operatingHours[day], end: e.target.value },
+                                                    })}
+                                                    className="flex-1 px-3 py-2 border border-slate-200 rounded input-focus"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {/* Hours summary */}
+                                <div className="p-4 bg-slate-100 rounded-lg border border-slate-200">
+                                    <p className="text-sm text-slate-700">
+                                        <span className="font-semibold">{fmtDec(weeklyHours)} hours/week</span>
+                                        {' '}• {fmt(annualHours)} hours/year
+                                    </p>
+                                </div>
+
+                                {/* Sensors */}
+                                <div className="pt-4 border-t border-slate-200">
+                                    <label className="flex items-start gap-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={addSensors}
+                                            onChange={e => setAddSensors(e.target.checked)}
+                                            className="w-4 h-4 rounded mt-0.5"
+                                        />
+                                        <div>
+                                            <p className="font-semibold text-slate-900">Add presence/daylight sensors</p>
+                                            <p className="text-sm text-slate-600 mt-1">
+                                                Adds £{SENSOR_COST_PER_FITTING}/fitting to project cost and reduces effective runtime by ~20%
+                                            </p>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                {/* ROI horizon */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-900 mb-3">Show ROI over:</label>
+                                    <div className="flex gap-3">
+                                        {[5, 7, 10].map(years => (
+                                            <button
+                                                key={years}
+                                                onClick={() => setPaybackYears(years)}
+                                                className={`flex-1 py-2 rounded-lg font-semibold transition ${
+                                                    paybackYears === years
+                                                        ? 'bg-amber-900 text-white'
+                                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                                }`}
+                                            >
+                                                {years} years
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        onClick={() => setStep('setup')}
+                                        className="flex-1 py-3 bg-slate-100 text-slate-900 rounded-lg font-semibold hover:bg-slate-200 transition"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        onClick={handleNext}
+                                        className="flex-1 py-3 bg-amber-900 text-white rounded-lg font-semibold hover:bg-amber-800 transition flex items-center justify-center gap-2"
+                                    >
+                                        See Results <ChevronRight size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ══ STEP 3: RESULTS ═══════════════════════════════════════ */}
+                    {step === 'results' && (
+                        <div className="max-w-4xl mx-auto px-6 py-12 card-fade">
+                            <div className="mb-12">
+                                <h1 className="display-font text-5xl font-semibold text-slate-900 mb-2">Results</h1>
+                                <p className="text-slate-600 text-lg">Annual consumption &amp; financial comparison</p>
+                            </div>
+
+                            <div className="space-y-8">
+                                {/* Energy Consumption */}
+                                <div>
+                                    <h2 className="display-font text-2xl font-semibold text-slate-900 mb-4">Energy Consumption</h2>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="p-6 bg-white border border-slate-200 rounded-lg">
+                                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Current Annual</p>
+                                            <p className="text-3xl font-bold text-slate-900">{fmt(currentKwh)}</p>
+                                            <p className="text-sm text-slate-600 mt-1">kWh/year</p>
+                                        </div>
+                                        <div className="p-6 bg-white border border-slate-200 rounded-lg">
+                                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">New Annual</p>
+                                            <p className="text-3xl font-bold text-slate-900">{fmt(newKwh)}</p>
+                                            <p className="text-sm text-slate-600 mt-1">kWh/year</p>
+                                        </div>
+                                        <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
+                                            <p className="text-xs font-semibold text-amber-900 uppercase mb-2">Saving</p>
+                                            <p className="text-3xl font-bold text-amber-900">{fmt(kwhSaving)}</p>
+                                            <p className="text-sm text-amber-700 mt-1">kWh/year</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Annual Costs */}
+                                <div>
+                                    <h2 className="display-font text-2xl font-semibold text-slate-900 mb-4">Annual Costs</h2>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="p-6 bg-white border border-slate-200 rounded-lg">
+                                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Current Cost</p>
+                                            <p className="text-3xl font-bold text-slate-900">£{fmt(currentAnnualCost)}</p>
+                                            <p className="text-sm text-slate-600 mt-1">per year</p>
+                                        </div>
+                                        <div className="p-6 bg-white border border-slate-200 rounded-lg">
+                                            <p className="text-xs font-semibold text-slate-500 uppercase mb-2">New Cost</p>
+                                            <p className="text-3xl font-bold text-slate-900">£{fmt(newAnnualCost)}</p>
+                                            <p className="text-sm text-slate-600 mt-1">per year</p>
+                                        </div>
+                                        <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
+                                            <p className="text-xs font-semibold text-green-900 uppercase mb-2">Annual Saving</p>
+                                            <p className="text-3xl font-bold text-green-900">£{fmt(annualSaving)}</p>
+                                            <p className="text-sm text-green-700 mt-1">per year</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Finance Options */}
+                                <div>
+                                    <h2 className="display-font text-2xl font-semibold text-slate-900 mb-4">Finance Options</h2>
+                                    <div className="grid md:grid-cols-3 gap-6">
+
+                                        {/* Buy Outright */}
+                                        <div className="p-6 bg-white border border-slate-200 rounded-lg">
+                                            <h3 className="font-semibold text-slate-900 mb-4">Buy Outright</h3>
+                                            <div className="space-y-4 text-sm">
+                                                <div>
+                                                    <p className="text-slate-600">Upfront cost</p>
+                                                    <p className="text-xl font-bold text-slate-900">£{fmt(totalProjectCost)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-slate-600">Payback period</p>
+                                                    <p className="text-xl font-bold text-slate-900">
+                                                        {paybackPeriod === Infinity
+                                                            ? '—'
+                                                            : `${Math.floor(paybackPeriod / 12)}y ${paybackPeriod % 12}m`}
+                                                    </p>
+                                                </div>
+                                                <div className="pt-4 border-t border-slate-200">
+                                                    <p className="text-slate-600 mb-1">Net benefit ({paybackYears}y)</p>
+                                                    <p className={`text-lg font-bold ${(annualSaving * paybackYears - totalProjectCost) >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                                                        £{fmt(annualSaving * paybackYears - totalProjectCost)}
+                                                    </p>
+                                                    <p className="text-xs text-slate-600 mt-1">ROI: {buyOutROI.toFixed(0)}%</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Finance Lease */}
+                                        <div className="p-6 bg-white border border-slate-200 rounded-lg">
+                                            <h3 className="font-semibold text-slate-900 mb-4">Finance Lease</h3>
+                                            <div className="space-y-4 text-sm">
+                                                <div>
+                                                    <p className="text-slate-600">Monthly payment</p>
+                                                    <p className="text-xl font-bold text-slate-900">£{fmt(leaseMonthly)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-slate-600">No upfront cost</p>
+                                                    <p className="text-xl font-bold text-slate-900">£0</p>
+                                                </div>
+                                                <div className="pt-4 border-t border-slate-200">
+                                                    <p className="text-slate-600 mb-1">Monthly net position</p>
+                                                    <p className={`text-lg font-bold ${leaseNetMonthly >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                                                        £{fmt(leaseNetMonthly)}
+                                                    </p>
+                                                    <p className="text-xs text-slate-600 mt-1">
+                                                        {leaseNetMonthly >= 0 ? 'Saving after payment' : 'Payment exceeds saving'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Energy as a Service */}
+                                        <div className="p-6 bg-white border-2 border-amber-300 rounded-lg">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="font-semibold text-slate-900">Energy as a Service</h3>
+                                                <span className="text-xs font-semibold bg-amber-100 text-amber-900 px-2 py-1 rounded">Recommended</span>
+                                            </div>
+                                            <div className="space-y-4 text-sm">
+                                                <div>
+                                                    <p className="text-slate-600">Monthly cost</p>
+                                                    <p className="text-xl font-bold text-slate-900">£{fmt(eaasMonthly)}</p>
+                                                    <p className="text-xs text-slate-500 mt-1">75% of your current bill</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-slate-600">No upfront cost</p>
+                                                    <p className="text-xl font-bold text-slate-900">£0</p>
+                                                </div>
+                                                <div className="pt-4 border-t border-slate-200">
+                                                    <p className="text-slate-600 mb-1">Monthly saving vs current</p>
+                                                    <p className="text-lg font-bold text-green-700">£{fmt(eaasNetMonthly)}</p>
+                                                    <p className="text-xs text-slate-600 mt-1">Instant saving from day one</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Assumptions */}
+                                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                                    <p className="font-semibold text-slate-700 mb-2 text-sm">Assumptions</p>
+                                    <ul className="space-y-1 text-xs list-disc list-inside text-slate-600">
+                                        <li>Project cost includes 8% overhead</li>
+                                        <li>
+                                            {addSensors
+                                                ? `Sensors included at £${SENSOR_COST_PER_FITTING}/fitting, reducing effective runtime by ${SENSOR_RUNTIME_REDUCTION * 100}%`
+                                                : 'Sensor costs not included'}
+                                        </li>
+                                        <li>Electricity rate: {electricityRate}p/kWh</li>
+                                        <li>Finance lease: project cost spread straight-line over {paybackYears} years (no interest modelled)</li>
+                                        <li>EaaS: priced at 75% of current monthly bill, no upfront cost, provider owns equipment</li>
+                                        <li>Savings assume current usage patterns continue</li>
+                                    </ul>
+                                </div>
+
+                                <button
+                                    onClick={() => setStep('setup')}
+                                    className="w-full py-3 bg-slate-100 text-slate-900 rounded-lg font-semibold hover:bg-slate-200 transition"
+                                >
+                                    Reset &amp; Start Over
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<LightingCalculator />);
+    </script>
+</body>
+</html>
