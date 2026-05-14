@@ -2022,7 +2022,7 @@
 
       // Lead notification — fire and forget, never blocks UI
       emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-        to_email:    'martynsheridan621@gmail.com',
+        to_email:    'msheridan@ameresco.com',
         to_name:     'Martyn',
         report_date: reportDate,
         system_size: systemSize,
@@ -2789,7 +2789,7 @@
 
     // Pre-calculate all text to size the box correctly before drawing it
     const discText    = 'This is a rough, hypothetical calculation based on very basic input information. For a more detailed design and accurate costings and savings please contact:';
-    const contactLine = 'Martyn Sheridan  |  martynsheridan@gmail.com  |  +44 (0) 787 2015769';
+    const contactLine = 'Martyn Sheridan  |  msheridan@ameresco.com  |  +44 (0) 787 2015769';
     const maxTextW    = CW - 12;
     T('normal', 7.2, [100, 60, 0]);
     const discLines    = doc.splitTextToSize(discText, maxTextW);
@@ -2960,7 +2960,7 @@
     // IMPORTANT NOTICE BOX
     doc.setDrawColor(...LGREY); doc.setLineWidth(0.4); doc.line(ML, chartY, PW - MR, chartY); chartY += 4;
     const discText = 'This is a rough, hypothetical calculation based on very basic input information. For a more detailed design and accurate costings and savings please contact:';
-    const contactLine = 'Martyn Sheridan  |  martynsheridan@gmail.com  |  +44 (0) 787 2015769';
+    const contactLine = 'Martyn Sheridan  |  msheridan@ameresco.com  |  +44 (0) 787 2015769';
     T('normal', 7.2, [100,60,0]);
     const dL = doc.splitTextToSize(discText, CW - 10);
     T('bold', 7.5, [130,80,0]);
