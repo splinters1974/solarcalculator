@@ -1,6 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" fill="none" role="img" aria-label="Ameresco">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 145" role="img" aria-label="Ameresco — Green · Clean · Sustainable">
   <title>Ameresco</title>
-  <!-- Curved swoosh arc — Ameresco brand mark -->
-  <path d="M 12,52 C 50,10 130,6 188,28" stroke="#3DAA4E" stroke-width="6" stroke-linecap="round"/>
-  <text x="12" y="72" font-family="'Arial', 'Helvetica Neue', Helvetica, sans-serif" font-size="28" font-weight="700" fill="#3DAA4E" letter-spacing="-0.5">ameresco</text>
+
+  <!-- White background so the blue/green brand colours read clearly -->
+  <rect width="480" height="145" fill="#ffffff" rx="6"/>
+
+  <!-- ── AMERESCO wordmark ── -->
+  <text x="20" y="92"
+        font-family="'Arial Black','Arial','Helvetica Neue',Helvetica,sans-serif"
+        font-size="76" font-weight="900"
+        fill="#1B72BE" letter-spacing="1">AMERESCO</text>
+
+  <!-- ── Tagline ── -->
+  <text x="22" y="128"
+        font-family="Georgia,'Times New Roman',serif"
+        font-size="21" font-style="italic"
+        fill="#3AAA3C">Green &#x2022; Clean &#x2022; Sustainable</text>
+
+  <!-- ── Orbital mark ──
+       Two overlapping ellipses centred at (430, 65).
+       Blue: wider/horizontal, rotated ~-25°
+       Green: taller/vertical, rotated ~+20°                    -->
+  <g transform="translate(430,65)">
+    <!-- Blue orbit -->
+    <ellipse rx="44" ry="21" stroke="#1B72BE" stroke-width="5.5"
+             fill="none" transform="rotate(-25)"/>
+    <!-- Green orbit -->
+    <ellipse rx="20" ry="44" stroke="#3AAA3C" stroke-width="5.5"
+             fill="none" transform="rotate(20)"/>
+  </g>
+
+  <!-- ® superscript -->
+  <text x="460" y="100"
+        font-family="Arial,sans-serif" font-size="13"
+        fill="#1B72BE">&#174;</text>
 </svg>
